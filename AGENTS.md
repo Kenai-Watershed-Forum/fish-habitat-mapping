@@ -1,16 +1,28 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-05-13 (shapefile download added)
+Last updated: 2026-05-23 (added focus_areas.qmd and fish_status.qmd chapters)
 
----
+------------------------------------------------------------------------
 
 ## Project Overview
 
-This project compiles and harmonizes existing freshwater fish observation data within the Kenai Peninsula Borough (KPB) to support End of Anadromy (EoA) and End of Fish modeling. The primary analytical goal is **species presence/absence** at locations across the KPB — abundance is secondary. The main analysis document is `existing_fish_obs.qmd`.
+This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habitat mapping work for the Kenai Peninsula Borough (KPB). The book will grow over time with additional chapters. Current chapters:
 
-The document renders to HTML and is intended to be published online. See the Deployment section below for current status.
+| File | Status |
+|----|----|
+| `index.qmd` | Intro / landing page (placeholder) |
+| `intro.qmd` | Introduction |
+| `focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. |
+| `existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** |
+| `fish_status.qmd` | Knowledge Status of Fish Presence/Absence — planned workflow: (1) build most-upstream anadromous fish observation layer from `existing_fish_obs.qmd` output + AWC terminal endpoints, (2) snap to NetMap channel reaches, (3) use Trace Network tools to assign most-upstream status, (4) label all segments as Fish Present / Fish Absent / Unknown. Early draft, no analysis code yet. |
+| `summary.qmd` | Summary |
+| `references.qmd` | References |
 
----
+The book renders to HTML and is published via **GitHub Pages** (see Deployment section). Output goes to `docs/` (`output-dir: docs` in `_quarto.yml`).
+
+> **Note:** All sections below (Data Sources, Output Schema, Standardized Vocabularies, Current State, Chunk Structure) pertain specifically to the `existing_fish_obs.qmd` chapter. As new chapters are added, their context should be documented in new sections here.
+
+------------------------------------------------------------------------
 
 ## Collaboration Standards
 
@@ -20,14 +32,14 @@ This is a long-term monitoring project. Code must remain readable and editable b
 
 Raw data files are received from researchers and must remain untouched.
 
----
+------------------------------------------------------------------------
 
 ## Data Sources
 
 All raw data lives under `data/input/`. All outputs go to `data/output/`.
 
 | Source label | Files | Notes |
-|---|---|---|
+|----|----|----|
 | `AFFI` | `data/input/affi/AFFI_DataExport_8Aug2024.xlsx` | Multi-tab relational DB; filtered to South Central region. Pre-processed output saved to `data/input/affi/affi_clipped.gpkg` so the large Excel file does not need to be bundled for deployment. |
 | `KBNERR_2006` | `data/input/kbnerr/HWS_Field_Data_2006_FINAL.xls` | Tabs: `FISH_CT`, `MASTER LAND REACH FISH` |
 | `KBNERR_2008` | `data/input/kbnerr/Final Fish Data_2008.xls` | No coordinates; borrowed from 2006 master |
@@ -40,14 +52,14 @@ All raw data lives under `data/input/`. All outputs go to `data/output/`.
 
 KPB boundary: `data/input/kpb_boundary/kpb_boundary.gpkg` (reprojected to EPSG:4326 for clipping). A `.shp` version also exists in the same folder but the `.gpkg` is used for rendering and deployment.
 
----
+------------------------------------------------------------------------
 
 ## Output Schema
 
 All data sources are harmonized into a single schema. Each row is one site × survey date × species combination.
 
 | Column | Type | Notes |
-|---|---|---|
+|----|----|----|
 | `siteID` | character | Site identifier from source data |
 | `surveyDate` | Date | Date of observation |
 | `commonName` | character | Common name (see lookup below) |
@@ -59,7 +71,7 @@ All data sources are harmonized into a single schema. Each row is one site × su
 | `decDegLon2` | double | WGS84 longitude |
 | `source` | character | Source label (e.g. `"KBNERR_2006"`, `"UAF_EPSCoR_2015"`) |
 
----
+------------------------------------------------------------------------
 
 ## Standardized Vocabularies
 
@@ -68,7 +80,7 @@ All data sources are harmonized into a single schema. Each row is one site × su
 Larger species lookup tables are stored as CSV files in `data/input/lookups/` and read into the QMD via `read_csv()`. **To add a species mapping, edit the relevant CSV directly** — no R editing required. Smaller source-specific format lookups remain as inline `tribble()` calls in the QMD.
 
 | File | Used by chunk | Purpose |
-|---|---|---|
+|----|----|----|
 | `species_lookup_affi.csv` | `species-lookup` | AFFI raw common names → `commonName` + `scientificName` |
 | `species_lookup_awc.csv` | `awc-lookup` | AWC 2-letter codes → `commonName` + `scientificName` |
 | `species_lookup_kbnerr_uaf.csv` | `species-lookup` | KBNERR/UAF scientific names → `commonName` |
@@ -91,13 +103,11 @@ Non-fish records (e.g. "no fish collected or observed", "western floater mussel"
 
 ### Life stage (`lifeStage`)
 
-Values match AFFI controlled vocabulary (lowercase):
-`"juvenile"`, `"adult"`, `"adult spawning"`, `"alevin"`, `"smolt"`, `"juvenile/adult"`, `"not applicable"`, `"not recorded"`, `"planktonic egg"`
+Values match AFFI controlled vocabulary (lowercase): `"juvenile"`, `"adult"`, `"adult spawning"`, `"alevin"`, `"smolt"`, `"juvenile/adult"`, `"not applicable"`, `"not recorded"`, `"planktonic egg"`
 
-UAF EPSCoR records are set to `"juvenile"` (dataset exclusively targets juvenile fish).
-KBNERR and KWF records are set to `NA` (life stage not recorded).
+UAF EPSCoR records are set to `"juvenile"` (dataset exclusively targets juvenile fish). KBNERR and KWF records are set to `NA` (life stage not recorded).
 
----
+------------------------------------------------------------------------
 
 **AFFI:** Complex relational database. Abundance = measured individuals (Fish Individual tab) + additional counts (Fish AddCount tab). Species and life stage come from Fish Observation tab. Coordinates are `decDegLat2`/`decDegLon2`. Original parsing code (ChatGPT-assisted) is archived in the `affi-parse-raw` chunk (`eval: false`).
 
@@ -113,14 +123,14 @@ KBNERR and KWF records are set to `NA` (life stage not recorded).
 
 **KWF 2025:** Wide ArcGIS field form. Up to 6 fish slots per row (Species_1–Species_6 / Count_1–Count_6) pivoted long. `siteID` = `"2025_" + OBJECTID`. Gear detected from presence of `Trap_deployment_time` vs. `Electrofishing_Start_Time`; the 2 rows with both columns filled are assigned `"Minnow Trap"`. `Rana sylvatica` (wood frog) excluded as non-fish.
 
----
+------------------------------------------------------------------------
 
 ## Current State (as of 2026-05-12)
 
 `existing_fish_obs.qmd` is complete through the Merged Dataset section. All source sections are written and produce clipped sf objects that are merged into a single harmonized output.
 
 | Object | Contents |
-|---|---|
+|----|----|
 | `fish_sc_clipped` | AFFI data clipped to KPB (intermediate; used by `affi-parse-raw` only) |
 | `affi_harmonized` | AFFI data harmonized to output schema; loaded from `affi_clipped.gpkg` |
 | `kbnerr_clipped` | KBNERR 2006 + 2008 + 2011 merged and clipped to KPB |
@@ -129,17 +139,14 @@ KBNERR and KWF records are set to `NA` (life stage not recorded).
 | `kwf_clipped` | KWF 2021-2024 + 2025 merged and clipped to KPB (501 records) |
 | `all_fish_clipped` | All five sources merged; exported to `data/output/kenai_fish_obs.gpkg` |
 
-Species names are fully harmonized: `all_fish_clipped` has separate `commonName` and `scientificName` columns. **~15,700 records** across sources (8,259 AFFI + 5,717 AWC_2025 + ~278 KBNERR + 253 UAF + 501 KWF [494 from 2021-2024 + ~7 from 2025 after clip]). Records with unresolvable species are filtered out during the merge step.
+Species names are fully harmonized: `all_fish_clipped` has separate `commonName` and `scientificName` columns. **\~15,700 records** across sources (8,259 AFFI + 5,717 AWC_2025 + \~278 KBNERR + 253 UAF + 501 KWF \[494 from 2021-2024 + \~7 from 2025 after clip\]). Records with unresolvable species are filtered out during the merge step.
 
-The Merged Dataset section includes:
-- A `species × source` record-count summary table (`knitr::kable` + `kableExtra`) with a self-contained CSV download link above it (base64-encoded via `base64enc`)
-- A separate KWF CSV download link (base64-encoded) in the KWF section, followed by a KWF shapefile download (base64-encoded zip); shapefile uses `kwf_clipped` and excludes the 25 coordinate-less records
-- A leaflet map with points color-coded by source (Dark2 palette) and hover tooltips showing species, source, site ID, date, and life stage
+The Merged Dataset section includes: - A `species × source` record-count summary table (`knitr::kable` + `kableExtra`) with a self-contained CSV download link above it (base64-encoded via `base64enc`) - A separate KWF CSV download link (base64-encoded) in the KWF section, followed by a KWF shapefile download (base64-encoded zip); shapefile uses `kwf_clipped` and excludes the 25 coordinate-less records - A leaflet map with points color-coded by source (Dark2 palette) and hover tooltips showing species, source, site ID, date, and life stage
 
 ### Chunk structure
 
 | Chunk label | Section | Contents |
-|---|---|---|
+|----|----|----|
 | `affi-process` | AFFI Data | Reads `affi_clipped.gpkg` → `affi_harmonized`; loads `kpb_boundary` |
 | `affi-parse-raw` | AFFI Data | `eval: false` — re-run only if `AFFI_DataExport_8Aug2024.xlsx` changes |
 | `awc-lookup` | AWC Data | Reads `species_lookup_awc.csv`; defines `lifestage_lookup_awc`, `schema_cols`, `base_cols` |
@@ -177,47 +184,25 @@ The Merged Dataset section includes:
 
 Note: the AFFI section uses `%>%` (magrittr pipe) in places due to its ChatGPT-generated origin — that is pre-existing and does not need to be changed now.
 
----
+------------------------------------------------------------------------
 
 ## Deployment
 
-### Current status (as of 2026-05-13)
+### GitHub Pages (current method)
 
-**Not yet successfully published.** Deployment to Posit Connect Cloud has been attempted but the published URL is not accessible. The preferred next step is **Quarto Pub** (see below).
+The book is published via GitHub Pages. Rendered output goes to `docs/` (`output-dir: docs` in `_quarto.yml`). `docs/` is committed to the repo and served by GitHub Pages.
 
-### Option A: Quarto Pub (recommended next attempt)
+**To publish an update:**
 
-From the RStudio Terminal (not the Console):
+1.  Render the book (`quarto render` in the Terminal, or Render Book in RStudio).
+2.  Commit and push — include the `docs/` folder.
 
-```
-quarto publish quarto-pub existing_fish_obs.qmd
-```
+**One-time repo setup** (already done): In the GitHub repo → Settings → Pages, set source to `Deploy from a branch`, branch `main`, folder `/docs`.
 
-This opens a browser to authorize with a Quarto Pub account (GitHub login works). Content is public by default — no access settings required. The result is a URL like `yourname.quarto.pub/existing-fish-obs`.
+### Large data file notes
 
-### Option B: Posit Connect Cloud
-
-rsconnect credentials are stored for username `benjamin-meyer-ak` on `connect.posit.cloud`. Deployments via `rsconnect::deployDoc()` appear to succeed but the resulting URLs return 404. Root cause is likely a mismatch between the rsconnect-authenticated account (`benjamin-meyer-ak`) and the browser-logged-in account (`benjaminmeyer`) — these may be two separate Connect Cloud accounts. To attempt again:
-
-1. Re-authenticate rsconnect to ensure both browser and rsconnect use the same account:
-   ```r
-   rsconnect::connectUser(server = "connect.posit.cloud")
-   ```
-2. Delete any stale `.dcf` inside `rsconnect/documents/existing_fish_obs.qmd/` before deploying.
-3. Run:
-   ```r
-   rsconnect::deployDoc(
-     doc       = "existing_fish_obs.qmd",
-     appTitle  = "Kenai Fish Observations",
-     launch.browser = TRUE
-   )
-   ```
-4. After deploying, go to the Connect Cloud dashboard and set content Access to **"Anyone"** — content defaults to private.
-
-### Bundle notes (apply to both options)
-
-- Bundle size ~11MB. The AFFI Excel (19MB) and AWC GDB are excluded because pre-processed GeoPackages are used instead.
-- **Never bundle raw multi-file formats** (shapefiles, GDBs) — always use single-file GeoPackages.
+- The AFFI Excel (19MB) and AWC GDB are excluded from the repo; pre-processed GeoPackages are used instead.
+- **Never commit raw multi-file formats** (shapefiles, GDBs) — always use single-file GeoPackages.
 - If adding a new large data source, save a pre-processed GeoPackage to `data/input/<source>/`, archive raw processing in an `eval: false` chunk, and read from the GeoPackage in the active chunk.
 - `data/input/lookups/` CSV files must be included — they are read at render time.
 - `data/output/` should contain only `kenai_fish_obs.gpkg`.

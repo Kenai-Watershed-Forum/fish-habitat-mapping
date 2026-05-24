@@ -1,0 +1,50 @@
+---
+title: "Knowledge Status of Fish Presence/Absence"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+editor: visual
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+# clear environment
+rm(list=ls())
+
+# load packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(stringr)
+library(lubridate)
+library(sf)
+library(xfun)
+```
+
+This chapter addresses the known statuses of fish presence / absence for channel segments within the project areas.
+
+Plan:
+
+1.  Create full point layer of all known most-upstream anadromous fish observations
+    1.  Use results from chapter in this document, "Existing Fish Observations within the Kenai Borough"
+    2.  Create new additional points at most-upstream terminal ends of 2025 Anadromous Waters Catalog
+    3.  Combine the two above data sources into a single layer
+2.  Snap all anadomous fish observation points to nearest NetMap channel reach
+3.  Use Trace Network tools to assign most-upstream status to snapped points.
+4.  Assign status to channel all channel segments above and below each most-upstream point
+    - Status options: Fish Present, Fish Absent, or Unknown

@@ -1,0 +1,45 @@
+---
+title: "Project Focus Areas"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+editor: visual
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+# clear environment
+rm(list=ls())
+
+# load packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(stringr)
+library(lubridate)
+library(sf)
+library(xfun)
+```
+
+This chapter presents the total extent of currently active project area
+
+(leaflet map of currently active project HUCs)
+
+(download link to zip file of project HUCs)
+
+(description/justification for current areas)

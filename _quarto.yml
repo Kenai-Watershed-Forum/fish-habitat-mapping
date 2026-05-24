@@ -9,7 +9,9 @@ book:
   chapters:
     - index.qmd
     - intro.qmd
+    - focus_areas.qmd
     - existing_fish_obs.qmd
+    - fish_status.qmd
     - summary.qmd
     - references.qmd
 
@@ -20,8 +22,8 @@ format:
     theme:
       - cosmo
       - brand
-  pdf:
-    documentclass: scrreprt
+#  pdf:
+#    documentclass: scrreprt
 
 editor: visual
 

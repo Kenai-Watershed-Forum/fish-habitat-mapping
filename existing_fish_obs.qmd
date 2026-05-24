@@ -38,11 +38,11 @@ library(xfun)
 
 This script explores data sources for existing freshwater fish presence/absence data on the Kenai Peninsula, including from the following sources:
 
--   Alaska Freshwater Fish Inventory (AFFI)
--   Kachemak Bay National Estuarine Research Reserve (KBNERR)
--   University of Alaska (UA)
--   Anadromous Waters Catalog (AWC)
--   Kenai Watershed Forum (KWF)
+- Alaska Freshwater Fish Inventory (AFFI)
+- Kachemak Bay National Estuarine Research Reserve (KBNERR)
+- University of Alaska (UA)
+- Anadromous Waters Catalog (AWC)
+- Kenai Watershed Forum (KWF)
 
 We are interested to see which, if any, of these datasets are applicable to End of Anadromy and/or end of Fish modeling.
 
@@ -236,10 +236,10 @@ Data from `HWS_Field_Data_2006_FINAL.xls`. Fish observations are in the `FISH_CT
 
 **Notes on data gaps:**
 
--   **Life stage** is not recorded at the observation level in this dataset. Size-class summaries exist in `MASTER LAND REACH FISH` but only as site-level aggregates.
--   **Time of observation** is not recorded; date only.
--   Columns `...14`–`...17` are spreadsheet artifacts and are dropped.
--   `"NONE"` species records (surveys with no fish detected) are excluded.
+- **Life stage** is not recorded at the observation level in this dataset. Size-class summaries exist in `MASTER LAND REACH FISH` but only as site-level aggregates.
+- **Time of observation** is not recorded; date only.
+- Columns `...14`–`...17` are spreadsheet artifacts and are dropped.
+- `"NONE"` species records (surveys with no fish detected) are excluded.
 
 ```{r}
 #| output: false
@@ -388,10 +388,10 @@ Data from two field seasons (2015, 2016) collected by UAF EPSCoR in streams of t
 
 **Notes on data handling:**
 
--   Life stage is set to `"juvenile"` for all records; this dataset exclusively targets juvenile fish.
--   The 2016 site sheet contains placeholder values (`**`) for coordinates. Since Site IDs are identical across years (same physical locations), coordinates from the 2015 `B Fishing Site Info` tab are used for both years.
--   Generic `"Stickleback"` entries (not identified to species) are retained as `"Stickleback sp."`
--   `"RT"` (rainbow trout) and `"Steel"` (steelhead) are both *Oncorhynchus mykiss* and are mapped to the same scientific name.
+- Life stage is set to `"juvenile"` for all records; this dataset exclusively targets juvenile fish.
+- The 2016 site sheet contains placeholder values (`**`) for coordinates. Since Site IDs are identical across years (same physical locations), coordinates from the 2015 `B Fishing Site Info` tab are used for both years.
+- Generic `"Stickleback"` entries (not identified to species) are retained as `"Stickleback sp."`
+- `"RT"` (rainbow trout) and `"Steel"` (steelhead) are both *Oncorhynchus mykiss* and are mapped to the same scientific name.
 
 ```{r}
 #| output: false
@@ -535,8 +535,8 @@ After clipping to the Kenai Peninsula Borough boundary, the AWC source contribut
 
 Fish survey data collected by Kenai Watershed Forum (KWF) in streams of the Kenai Peninsula from 2021 - 2025. Surveys targeted small stream fish communities associated with End of Anadromy investigation sites.
 
--   **2021–2024** data (`2021_2024_fish_survey_data.xlsx`) used minnow traps. Fish observations are in the `F_Fish_ID` tab; site coordinates are in the `A_Sample_Event` tab; sampling effort and gear type are in the `C_Sample_Effort` tab.
--   **2025** data (`2025_fish_survey_data.xlsx`) used both minnow traps and backpack electrofishing. All data are in a single wide-format tab (`T2025_KWF_Stream_Surveys`) collected via an ArcGIS field form; each row is a GPS point with up to six fish observation "slots" per row.
+- **2021–2024** data (`2021_2024_fish_survey_data.xlsx`) used minnow traps. Fish observations are in the `F_Fish_ID` tab; site coordinates are in the `A_Sample_Event` tab; sampling effort and gear type are in the `C_Sample_Effort` tab.
+- **2025** data (`2025_fish_survey_data.xlsx`) used both minnow traps and backpack electrofishing. All data are in a single wide-format tab (`T2025_KWF_Stream_Surveys`) collected via an ArcGIS field form; each row is a GPS point with up to six fish observation "slots" per row.
 
 ```{r}
 #| label: kwf-lookup
@@ -852,4 +852,3 @@ st_write(anadromous_clipped, "data/output/kenai_anadromous_fish_obs.gpkg")
 Anadromous species are defined here as those listed in the [ADF&G Anadromous Waters Catalog (AWC) species codes](https://www.adfg.alaska.gov/sf/SARR/AWC/index.cfm?ADFG=defs.codes). The filtered dataset contains `r nrow(anadromous_clipped)` records across all sources. Note that *Oncorhynchus mykiss* appears as both "steelhead" (AWC source) and "rainbow trout" (all other sources) in this dataset; both are included since the AWC recognizes this species as anadromous, though individual survey records cannot distinguish anadromous-run fish from resident fish.
 
 [Download kenai_anadromous_fish_obs.gpkg](data/output/kenai_anadromous_fish_obs.gpkg){download="kenai_anadromous_fish_obs.gpkg"}
-
