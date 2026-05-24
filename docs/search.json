@@ -20,26 +20,6 @@
     ]
   },
   {
-    "objectID": "summary.html",
-    "href": "summary.html",
-    "title": "3  Summary",
-    "section": "",
-    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Summary</span>"
-    ]
-  },
-  {
-    "objectID": "references.html",
-    "href": "references.html",
-    "title": "References",
-    "section": "",
-    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. (USA) 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
-    "crumbs": [
-      "References"
-    ]
-  },
-  {
     "objectID": "existing_fish_obs.html",
     "href": "existing_fish_obs.html",
     "title": "2  Existing Fish Observations within the Kenai Borough",
@@ -117,6 +97,26 @@
     "text": "2.7 Download\n\n2.7.1 Download all fish observations\nThe harmonized dataset is available as a GeoPackage containing all 15006 fish observation records across all sources, clipped to the Kenai Peninsula Borough boundary.\nDownload kenai_fish_obs.gpkg\n\n\n2.7.2 Download all anadromous fish observations\n\n\nShow code\n# Anadromous species as defined by ADF&G AWC species codes:\n# https://www.adfg.alaska.gov/sf/SARR/AWC/index.cfm?ADFG=defs.codes\n# Filter by scientificName where a binomial is available; fall back to\n# commonName for the four unresolved groups (NA scientificName in lookup).\n# Note: Oncorhynchus mykiss appears as \"steelhead\" (AWC source) and\n# \"rainbow trout\" (KBNERR/UAF/KWF/AFFI) — both are captured via scientificName.\nanadromous_sci &lt;- c(\n  \"Salvelinus alpinus\",        # Arctic char\n  \"Lethenteron camtschaticum\", # Arctic lamprey\n  \"Coregonus autumnalis\",      # Arctic cisco\n  \"Coregonus nasus\",           # broad whitefish\n  \"Coregonus laurettae\",       # Bering cisco\n  \"Oncorhynchus keta\",         # chum salmon\n  \"Oncorhynchus kisutch\",      # coho salmon\n  \"Oncorhynchus clarkii\",      # cutthroat trout\n  \"Salvelinus malma\",          # Dolly Varden\n  \"Acipenser medirostris\",     # green sturgeon\n  \"Coregonus pidschian\",       # humpback whitefish\n  \"Oncorhynchus tshawytscha\",  # Chinook salmon\n  \"Coregonus sardinella\",      # least cisco\n  \"Lethenteron ayresii\",       # river lamprey\n  \"Spirinchus thaleichthys\",   # longfin smelt\n  \"Osmerus mordax\",            # rainbow smelt\n  \"Thaleichthys pacificus\",    # eulachon\n  \"Oncorhynchus gorbuscha\",    # pink salmon\n  \"Entosphenus tridentatus\",   # Pacific lamprey\n  \"Oncorhynchus nerka\",        # sockeye salmon\n  \"Stenodus leucichthys\",      # inconnu\n  \"Oncorhynchus mykiss\",       # steelhead / rainbow trout\n  \"Acipenser transmontanus\"    # white sturgeon\n)\n\n# Unresolved groups (scientificName = NA in lookup): matched by commonName\nanadromous_common_nr &lt;- c(\"lamprey sp.\", \"smelt sp.\", \"sturgeon sp.\", \"whitefish sp.\")\n\nanadromous_clipped &lt;- all_fish_clipped |&gt;\n  filter(scientificName %in% anadromous_sci | commonName %in% anadromous_common_nr)\n\nunlink(\"data/output/kenai_anadromous_fish_obs.gpkg\")\nst_write(anadromous_clipped, \"data/output/kenai_anadromous_fish_obs.gpkg\")\n\n\nAnadromous species are defined here as those listed in the ADF&G Anadromous Waters Catalog (AWC) species codes. The filtered dataset contains 13178 records across all sources. Note that Oncorhynchus mykiss appears as both “steelhead” (AWC source) and “rainbow trout” (all other sources) in this dataset; both are included since the AWC recognizes this species as anadromous, though individual survey records cannot distinguish anadromous-run fish from resident fish.\nDownload kenai_anadromous_fish_obs.gpkg",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Existing Fish Observations within the Kenai Borough</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "3  Summary",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Summary</span>"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. (USA) 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "crumbs": [
+      "References"
     ]
   }
 ]

@@ -1,9 +1,10 @@
 project:
   type: book
+  output-dir: docs
 
 book:
   title: "fish-habitat-mapping"
-  author: "Norah Jones"
+  author: "Benjamin Meyer"
   date: "5/23/2026"
   chapters:
     - index.qmd
