@@ -1,0 +1,10 @@
+November 14, 2025
+ben@kenaiwatershed.org
+
+Notes on preparing draft NetMap data for the assessment script in "KYD_reach.R"
+
+Proposed Steps
+
+1) Retain all draft NetMap arcs within the LiDAR coverage area (pairwise clip tool)
+2) Create a seperate .gdb for each HUC10 in LiDAR coverage area (pairwise clip tool)
+3) Create a seperate .R script and use source() to loop KYD_reach.R as a function to derive summary statistics for each seperate HUC10

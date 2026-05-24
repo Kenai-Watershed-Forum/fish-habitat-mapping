@@ -8,6 +8,7 @@ book:
   chapters:
     - index.qmd
     - intro.qmd
+    - existing_fish_obs.qmd
     - summary.qmd
     - references.qmd
 

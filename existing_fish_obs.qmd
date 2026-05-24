@@ -1,0 +1,855 @@
+---
+title: "Existing Fish Observations within the Kenai Borough"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+editor: visual
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+# clear environment
+rm(list=ls())
+
+# load packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(stringr)
+library(lubridate)
+library(sf)
+library(xfun)
+```
+
+This script explores data sources for existing freshwater fish presence/absence data on the Kenai Peninsula, including from the following sources:
+
+-   Alaska Freshwater Fish Inventory (AFFI)
+-   Kachemak Bay National Estuarine Research Reserve (KBNERR)
+-   University of Alaska (UA)
+-   Anadromous Waters Catalog (AWC)
+-   Kenai Watershed Forum (KWF)
+
+We are interested to see which, if any, of these datasets are applicable to End of Anadromy and/or end of Fish modeling.
+
+The following sections perform data intake for each data source seperately, and harmonize it into a single dataframe.
+
+## ADFG AFFI Data
+
+Alaska Department of Fish and Game's Alaska Freshwater Fish Inventory: <https://www.adfg.alaska.gov/index.cfm?adfg=ffinventory.main>
+
+```{r}
+#| label: affi-process
+#| output: false
+
+# Reads pre-processed GeoPackages derived from AFFI_DataExport_8Aug2024.xlsx
+# and kpb_boundary shapefile. If source data changes, re-run the affi-parse-raw
+# chunk below to regenerate affi_clipped.gpkg, then re-render this document.
+affi_harmonized <- st_read("data/input/affi/affi_clipped.gpkg", quiet = TRUE)
+
+kpb_boundary <- st_read("data/input/kpb_boundary/kpb_boundary.gpkg", quiet = TRUE) |>
+  st_transform(4326)
+```
+
+```{r}
+#| label: affi-parse-raw
+#| eval: false
+
+# Re-run this chunk only if AFFI_DataExport_8Aug2024.xlsx is updated.
+# Parses the raw AFFI relational database, harmonizes species names,
+# clips to KPB, and writes affi_clipped.gpkg.
+# Note: this code was originally generated with AI assistance (ChatGPT, 3/4/2026)
+# due to the complex multi-tab relational structure of the AFFI export.
+dat <- "data/input/affi/AFFI_DataExport_8Aug2024.xlsx"
+
+site      <- read_excel(dat, sheet = "Site")
+survey    <- read_excel(dat, sheet = "Survey")
+fish_obs  <- read_excel(dat, sheet = "Fish Observation")
+fish_ind  <- read_excel(dat, sheet = "Fish Indivual")
+fish_add  <- read_excel(dat, sheet = "Fish AddCount")
+samp_evt  <- read_excel(dat, sheet = "Sample Event")
+observer  <- read_excel(dat, sheet = "Observer")
+
+normalize_person_name <- function(x) {
+  x <- trimws(x)
+  x[x == ""] <- NA_character_
+  out <- vapply(x, function(s) {
+    if (is.na(s)) return(NA_character_)
+    s <- str_squish(s)
+    parts <- unlist(str_split(s, "\\s+"))
+    if (length(parts) < 2) return(s)
+    paste(parts[1], parts[length(parts)])
+  }, character(1))
+  unname(out)
+}
+
+attach_observer_details <- function(survey_df, observer_lookup, obs_col, prefix) {
+  stopifnot(obs_col %in% names(survey_df))
+  tmp <- survey_df %>%
+    mutate(.obs_norm = normalize_person_name(.data[[obs_col]])) %>%
+    left_join(observer_lookup, by = c(".obs_norm" = "fullName")) %>%
+    select(-.obs_norm)
+  lookup_cols <- setdiff(names(observer_lookup), "fullName")
+  rename_map <- setNames(lookup_cols, paste0(prefix, lookup_cols))
+  tmp %>% rename(!!!rename_map)
+}
+
+relocate_if_present <- function(df, cols) {
+  cols <- cols[cols %in% names(df)]
+  dplyr::relocate(df, dplyr::all_of(cols))
+}
+
+fish_obs_key <- fish_obs %>%
+  select(fishObservationID, surveyID, species, lifeStage)
+
+measured_counts <- fish_ind %>%
+  left_join(fish_obs_key, by = "fishObservationID") %>%
+  filter(!is.na(surveyID), !is.na(species)) %>%
+  count(surveyID, species, lifeStage, name = "n_measured")
+
+stopifnot("fishAddCount" %in% names(fish_add))
+add_counts <- fish_add %>%
+  left_join(fish_obs_key, by = "fishObservationID") %>%
+  filter(!is.na(surveyID), !is.na(species)) %>%
+  group_by(surveyID, species, lifeStage) %>%
+  summarise(n_additional = sum(fishAddCount, na.rm = TRUE), .groups = "drop")
+
+abundance <- full_join(measured_counts, add_counts, by = c("surveyID", "species", "lifeStage")) %>%
+  mutate(
+    n_measured   = coalesce(n_measured, 0L),
+    n_additional = coalesce(n_additional, 0),
+    abundance    = n_measured + n_additional
+  ) %>%
+  select(surveyID, species, lifeStage, abundance, n_measured, n_additional)
+
+survey_site <- survey %>% left_join(site, by = "siteID")
+
+sample_event_summ <- samp_evt %>%
+  group_by(surveyID) %>%
+  summarise(
+    n_sample_events  = n(),
+    sampleEventCodes = if ("sampleEventCode" %in% names(samp_evt))
+      str_c(sort(unique(na.omit(sampleEventCode))), collapse = "; ") else NA_character_,
+    sampleGears = if ("sampleGear" %in% names(samp_evt))
+      str_c(sort(unique(na.omit(sampleGear))), collapse = "; ") else NA_character_,
+    trapCount_sum   = if ("trapCount" %in% names(samp_evt) && !all(is.na(trapCount))) sum(trapCount, na.rm = TRUE) else NA_real_,
+    .groups = "drop"
+  )
+
+observer_lookup <- observer %>%
+  mutate(fullName = str_squish(paste(firstName, lastName))) %>%
+  arrange(fullName, observerID) %>%
+  group_by(fullName) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(fullName, observerID, initials, firstName, lastName, title)
+
+survey_enriched <- survey_site
+for (k in 1:4) {
+  col <- paste0("observer", k)
+  if (col %in% names(survey_enriched))
+    survey_enriched <- attach_observer_details(survey_enriched, observer_lookup, col, paste0(col, "_"))
+}
+
+fish_survey_abundance <- abundance %>%
+  left_join(survey_enriched,   by = "surveyID") %>%
+  left_join(sample_event_summ, by = "surveyID") %>%
+  remove_empty("cols") %>%
+  relocate_if_present(c(
+    "surveyID","siteID","species","lifeStage","abundance","n_measured","n_additional",
+    "region","decDegLat2","decDegLon2","surveyDate","sampleGears"
+  )) %>%
+  filter(region == "South Central") %>%
+  mutate(source = "AFFI")
+
+fish_sc_clipped <- fish_survey_abundance %>%
+  filter(!is.na(decDegLon2), !is.na(decDegLat2)) %>%
+  st_as_sf(coords = c("decDegLon2", "decDegLat2"), crs = 4326, remove = FALSE) %>%
+  st_filter(kpb_boundary)
+
+affi_harmonized <- fish_sc_clipped |>
+  mutate(siteID = as.character(siteID)) |>
+  select(all_of(base_cols)) |>
+  left_join(species_lookup_affi, by = "species") |>
+  filter(!is.na(commonName)) |>
+  select(all_of(schema_cols))
+
+st_write(affi_harmonized, "data/input/affi/affi_clipped.gpkg", delete_dsn = TRUE)
+```
+
+### AFFI Data Interpretation
+
+After harmonizing and clipping to the Kenai Peninsula Borough boundary, the AFFI source contributes 8,259 fish observation records to the combined dataset.
+
+From this data subset and from discussions with ADFG staff, it does not appear that we will have existing "end of fish" or "end of anadromy" survey data to work with from AFFI. Existing data in the region is of either an opportunistic nature, or is targeted for some project-specific purpose (e.g. permitting/licensing).
+
+<br>
+
+## Kachemak Bay National Estuarine Research Reserve Data
+
+Data from three field seasons (2006, 2008, 2011) collected by KBNERR in headwater streams of the Kenai Lowlands [@king2012]. The species lookup below covers all species across all three files:
+
+```{r}
+#| output: false
+
+# Species lookup used across all KBNERR files
+species_lookup_kbnerr <- tribble(
+  ~code,       ~species,
+  "GASTACUL",  "Gasterosteus aculeatus",
+  "ONCOKISU",  "Oncorhynchus kisutch",
+  "ONCOMYKI",  "Oncorhynchus mykiss",
+  "ONCOTSHA",  "Oncorhynchus tshawytscha",
+  "PUNGPUNG",  "Pungitius pungitius",
+  "SALVMALM",  "Salvelinus malma",
+  "COTTCOGN",  "Cottus cognatus",
+  "LAMPREY",   "Lampetra sp."
+)
+
+# 2011 uses different species codes
+species_lookup_2011 <- tribble(
+  ~code, ~species,
+  "CO",  "Oncorhynchus kisutch",
+  "CK",  "Oncorhynchus tshawytscha",
+  "SH",  "Oncorhynchus mykiss",
+  "DV",  "Salvelinus malma",
+  "3S",  "Gasterosteus aculeatus"
+)
+```
+
+### "Headwater Streams (HWS) Field Data 2006" Excel Document
+
+Data from `HWS_Field_Data_2006_FINAL.xls`. Fish observations are in the `FISH_CT` tab; site coordinates are in the `MASTER LAND REACH FISH` tab. The two tables are linked via site ID after stripping the `"HWS-"` prefix from `FISH_CT$Site_ID`.
+
+**Notes on data gaps:**
+
+-   **Life stage** is not recorded at the observation level in this dataset. Size-class summaries exist in `MASTER LAND REACH FISH` but only as site-level aggregates.
+-   **Time of observation** is not recorded; date only.
+-   Columns `...14`–`...17` are spreadsheet artifacts and are dropped.
+-   `"NONE"` species records (surveys with no fish detected) are excluded.
+
+```{r}
+#| output: false
+
+kbnerr_file <- "data/input/kbnerr/HWS_Field_Data_2006_FINAL.xls"
+
+# ----------------------------
+# Read sheets — keep only needed columns
+# ----------------------------
+master_kbnerr <- read_excel(kbnerr_file, sheet = "MASTER LAND REACH FISH") |>
+  select(SITE_ID2, LONG_DD, LAT_DD)
+
+fish_ct_raw <- read_excel(kbnerr_file, sheet = "FISH_CT") |>
+  select(Site_ID, Date, Subreach, Gear, Species, CT, CT_PLUS, CT_50, CT_PL50, Notes)
+
+# ----------------------------
+# Clean, join, and align to AFFI schema
+# ----------------------------
+kbnerr_fish <- fish_ct_raw |>
+  # Drop zero-fish records
+  filter(Species != "NONE") |>
+  # Strip "HWS-" prefix to match SITE_ID2 in master
+  mutate(SITE_ID2 = sub("^HWS-", "", Site_ID)) |>
+  # Parse date from YYYYMMDD integer
+  mutate(surveyDate = ymd(Date)) |>
+  # Join coordinates from master
+  left_join(master_kbnerr, by = "SITE_ID2") |>
+  # Resolve species codes to scientific names
+  left_join(species_lookup_kbnerr, by = c("Species" = "code")) |>
+  mutate(
+    source    = "KBNERR_2006",
+    lifeStage = NA_character_   # not recorded in this dataset
+  ) |>
+  rename(
+    siteID     = SITE_ID2,
+    abundance  = CT,
+    decDegLon2 = LONG_DD,
+    decDegLat2 = LAT_DD
+  ) |>
+  # Normalize gear: "Electro" → "Electrofishing"; fill any NAs as electrofishing per field notes
+  mutate(sampleGears = case_when(
+    is.na(Gear) | Gear == "Electro" ~ "Electrofishing",
+    TRUE ~ Gear
+  )) |>
+  select(
+    siteID, surveyDate, species, lifeStage, sampleGears,
+    abundance, CT_PLUS, CT_50, CT_PL50,
+    decDegLat2, decDegLon2, Subreach, Notes, source
+  )
+
+```
+
+### "Final Fish Data 2008" Excel Document
+
+Data from `Final Fish Data_2008.xls`. Individual fish records (length/weight measurements) aggregated to counts per site × date × species. Site coordinates are borrowed from the 2006 master, as the 2008 file contains no coordinate data. The `-L`/`-M`/`-U` site ID suffixes (Lower/Middle/Upper reach position) are retained in `siteID` for reference but stripped when joining coordinates, meaning all positions at a base site share the same point.
+
+Gear is not recorded in this file; electrofishing is assumed based on the presence of individual fish measurements.
+
+```{r}
+#| output: false
+
+kbnerr_2008 <- read_excel("data/input/kbnerr/Final Fish Data_2008.xls", sheet = "Sheet1") |>
+  select(Site_ID, Date, Subreach, Species, `Length (cm)`, `Weight (g)`, Comments) |>
+  filter(Species != "NO FISH") |>
+  mutate(
+    species_code = gsub(" ", "", Species),          # "GAST ACUL" -> "GASTACUL"
+    SITE_ID2     = sub("-[LMU]$", "", Site_ID),     # strip Lower/Middle/Upper suffix for coord join
+    surveyDate   = ymd(Date)
+  ) |>
+  left_join(species_lookup_kbnerr, by = c("species_code" = "code")) |>
+  left_join(master_kbnerr, by = "SITE_ID2") |>
+  group_by(Site_ID, SITE_ID2, surveyDate, species, LONG_DD, LAT_DD) |>
+  summarise(abundance = n(), .groups = "drop") |>
+  rename(siteID = Site_ID, decDegLon2 = LONG_DD, decDegLat2 = LAT_DD) |>
+  mutate(
+    source      = "KBNERR_2008",
+    lifeStage   = NA_character_,
+    sampleGears = "Electrofishing"
+  ) |>
+  select(siteID, surveyDate, species, lifeStage, sampleGears,
+         abundance, decDegLat2, decDegLon2, source)
+
+
+```
+
+### "Headwater Streams (HWS) 2011 Data" Excel Document
+
+Data from `HWS_2011_data_111011_cw_review.xlsx`. Individual fish records aggregated to counts per site × date × species. Coordinates are in the `Form1_Site` tab as UTM Zone 5N (EPSG:32605) and are reprojected to WGS84. Sites V12 and V17A have no recorded coordinates and will have `NA` for lat/lon.
+
+Gear is not recorded as a column; all surveys are electrofishing based on the `Efisher info` field.
+
+```{r}
+#| output: false
+
+# Coordinates from Form1_Site — UTM Zone 5N reprojected to WGS84
+coords_2011 <- read_excel("data/input/kbnerr/HWS_2011_data_111011_cw_review.xlsx",
+                          sheet = "Form1_Site", col_names = FALSE, skip = 2) |>
+  select(siteID = 1, utm_n = 4, utm_e = 5) |>
+  filter(!is.na(siteID), utm_n > 0, utm_e > 0) |>
+  # Site V41 has a data entry error: northing missing its leading digit (663137 → 6631370)
+  mutate(utm_n = if_else(utm_n < 1e6, utm_n * 10, utm_n)) |>
+  st_as_sf(coords = c("utm_e", "utm_n"), crs = 32605) |>
+  st_transform(4326) |>
+  mutate(
+    decDegLon2 = st_coordinates(geometry)[, 1],
+    decDegLat2 = st_coordinates(geometry)[, 2]
+  ) |>
+  st_drop_geometry()
+
+kbnerr_2011 <- read_excel("data/input/kbnerr/HWS_2011_data_111011_cw_review.xlsx",
+                          sheet = "Form2_Fish") |>
+  rename(siteID = `Site ID`, species_code = Species) |>
+  filter(!is.na(species_code)) |>
+  mutate(surveyDate = as.Date(Date)) |>
+  left_join(species_lookup_2011, by = c("species_code" = "code")) |>
+  left_join(coords_2011, by = "siteID") |>
+  group_by(siteID, surveyDate, species, decDegLat2, decDegLon2) |>
+  summarise(abundance = n(), .groups = "drop") |>
+  mutate(
+    source      = "KBNERR_2011",
+    lifeStage   = NA_character_,
+    sampleGears = "Electrofishing"
+  ) |>
+  select(siteID, surveyDate, species, lifeStage, sampleGears,
+         abundance, decDegLat2, decDegLon2, source)
+
+
+```
+
+```{r}
+#| output: false
+
+kbnerr_clipped <- bind_rows(kbnerr_fish, kbnerr_2008, kbnerr_2011) |>
+  filter(!is.na(decDegLon2), !is.na(decDegLat2)) |>
+  st_as_sf(coords = c("decDegLon2", "decDegLat2"), crs = 4326, remove = FALSE) |>
+  st_filter(kpb_boundary)
+```
+
+After harmonizing and clipping to the Kenai Peninsula Borough boundary, the KBNERR source contributes 278 fish observation records to the combined dataset (171 from 2006, 73 from 2008, 34 from 2011).
+
+<br>
+
+## University of Alaska EPSCoR Southcentral Test Case, Juvenile Fish Data
+
+Data from two field seasons (2015, 2016) collected by UAF EPSCoR in streams of the Kenai Peninsula [@meyer2023]. Original data source: <https://knb.ecoinformatics.org/view/doi%3A10.5063%2FF1Q52MZF>. Individual fish records from the `C Diet & LW Data` tab are aggregated to counts per site × date × species and harmonized to the shared schema.
+
+**Notes on data handling:**
+
+-   Life stage is set to `"juvenile"` for all records; this dataset exclusively targets juvenile fish.
+-   The 2016 site sheet contains placeholder values (`**`) for coordinates. Since Site IDs are identical across years (same physical locations), coordinates from the 2015 `B Fishing Site Info` tab are used for both years.
+-   Generic `"Stickleback"` entries (not identified to species) are retained as `"Stickleback sp."`
+-   `"RT"` (rainbow trout) and `"Steel"` (steelhead) are both *Oncorhynchus mykiss* and are mapped to the same scientific name.
+
+```{r}
+#| output: false
+
+# Species lookup: raw labels from both years → scientific names
+species_lookup_uaf <- read_csv("data/input/lookups/species_lookup_uaf.csv",
+                               show_col_types = FALSE)
+
+# Coordinates from 2015 site sheet (2016 sheet has placeholder ** values)
+# One coordinate pair per Site ID; sites are stable across both years
+uaf_coords <- read_excel("data/input/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx",
+                         sheet = "B Fishing Site Info") |>
+  select(`Site ID`, Latitude, Longitude) |>
+  group_by(`Site ID`) |>
+  slice(1) |>
+  ungroup() |>
+  rename(siteID = `Site ID`, decDegLat2 = Latitude, decDegLon2 = Longitude)
+
+# Process one year's diet sheet into the shared schema
+process_uaf_diet <- function(file, year_label) {
+  read_excel(file, sheet = "C Diet & LW Data") |>
+    select(`Site ID`, Date, spp) |>
+    filter(!is.na(spp)) |>
+    left_join(species_lookup_uaf, by = c("spp" = "raw")) |>
+    left_join(uaf_coords, by = c("Site ID" = "siteID")) |>
+    mutate(surveyDate = mdy(Date)) |>
+    group_by(`Site ID`, surveyDate, species, decDegLat2, decDegLon2) |>
+    summarise(abundance = n(), .groups = "drop") |>
+    rename(siteID = `Site ID`) |>
+    mutate(
+      lifeStage   = "juvenile",
+      sampleGears = "Dip Net",
+      source      = paste0("UAF_EPSCoR_", year_label)
+    ) |>
+    select(siteID, surveyDate, species, lifeStage, sampleGears,
+           abundance, decDegLat2, decDegLon2, source)
+}
+
+uaf_2015 <- process_uaf_diet(
+  "data/input/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx", "2015"
+)
+uaf_2016 <- process_uaf_diet(
+  "data/input/uaf/2016_EPSCoR_Aquatic_Ecology_Database.xlsx", "2016"
+)
+
+uaf_clipped <- bind_rows(uaf_2015, uaf_2016) |>
+  filter(!is.na(decDegLon2), !is.na(decDegLat2)) |>
+  st_as_sf(coords = c("decDegLon2", "decDegLat2"), crs = 4326, remove = FALSE) |>
+  st_filter(kpb_boundary)
+```
+
+After harmonizing and clipping to the Kenai Peninsula Borough boundary, the UAF EPSCoR source contributes 253 fish observation records to the combined dataset (113 from 2015, 140 from 2016).
+
+## Anadromous Waters Catalog (AWC)
+
+The Alaska Department of Fish and Game's Anadromous Waters Catalog (AWC) is a statewide catalog of waterbodies known to support anadromous fish. It documents fish presence and activity (rearing, spawning, migration) compiled from many sources over many years: it is not a record of individual dated surveys. Survey dates and abundance counts are therefore not available for AWC records. The 2025 geodatabase was downloaded from the [ADF&G AWC data portal](https://www.adfg.alaska.gov/sf/SARR/AWC/index.cfm?ADFG=maps.dataFiles).
+
+```{r}
+#| label: awc-lookup
+#| output: false
+
+# Maps AWC two-letter species codes to standardized common and scientific names.
+# scientificName is NA where identification cannot be resolved to genus + species.
+species_lookup_awc <- read_csv("data/input/lookups/species_lookup_awc.csv",
+                               show_col_types = FALSE)
+
+# Maps single AWC activity letters to lifeStage values.
+lifestage_lookup_awc <- tribble(
+  ~activity, ~lifeStage,
+  "m",       "adult",
+  "p",       "not recorded",
+  "r",       "juvenile",
+  "s",       "adult spawning"
+)
+
+# Output schema column order — defined here so it is available to all
+# subsequent chunks (awc-process, merge-all, etc.)
+schema_cols <- c("siteID", "surveyDate", "commonName", "scientificName",
+                 "lifeStage", "sampleGears", "abundance",
+                 "decDegLat2", "decDegLon2", "source")
+
+base_cols <- c("siteID", "surveyDate", "species", "lifeStage",
+               "sampleGears", "abundance", "decDegLat2", "decDegLon2", "source")
+```
+
+```{r}
+#| label: awc-process
+#| output: false
+
+# Reads the pre-processed GeoPackage derived from awc_2025.gdb.
+# If the source GDB changes, re-run the awc-parse-raw chunk below to
+# regenerate awc_clipped.gpkg, then re-render this document.
+awc_clipped <- st_read("data/input/awc/awc_clipped.gpkg", quiet = TRUE)
+```
+
+```{r}
+#| label: awc-parse-raw
+#| eval: false
+
+# Re-run this chunk only if awc_2025.gdb is updated.
+# Parses the raw GDB, expands packed species/activity codes to one row per
+# species × life stage combination, clips to KPB, and writes awc_clipped.gpkg.
+awc_clipped <- st_read(
+  "data/input/awc/awc_2025.gdb",
+  layer = "awc_points_2025",
+  quiet = TRUE
+) |>
+  st_drop_geometry() |>
+  filter(!is.na(LATITUDE), !is.na(LONGITUDE)) |>
+  select(siteID = AWC_CODE, SPECIES, decDegLat2 = LATITUDE, decDegLon2 = LONGITUDE) |>
+  mutate(code = str_split(SPECIES, ",")) |>
+  unnest(code) |>
+  mutate(code = str_trim(code)) |>
+  mutate(
+    awc_code   = str_extract(code, "^[A-Z]+"),
+    activities = str_extract(code, "[a-z]+$")
+  ) |>
+  filter(!is.na(awc_code), !is.na(activities)) |>
+  mutate(activity = str_split(activities, "")) |>
+  unnest(activity) |>
+  left_join(species_lookup_awc,   by = "awc_code") |>
+  left_join(lifestage_lookup_awc, by = "activity") |>
+  filter(!is.na(commonName)) |>
+  distinct(siteID, decDegLat2, decDegLon2, commonName, scientificName, lifeStage) |>
+  mutate(
+    surveyDate  = as.Date(NA),
+    sampleGears = NA_character_,
+    abundance   = NA_integer_,
+    source      = "AWC_2025"
+  ) |>
+  select(all_of(schema_cols)) |>
+  st_as_sf(coords = c("decDegLon2", "decDegLat2"), crs = 4326, remove = FALSE) |>
+  st_filter(kpb_boundary)
+
+st_write(awc_clipped, "data/input/awc/awc_clipped.gpkg", delete_dsn = TRUE)
+```
+
+After clipping to the Kenai Peninsula Borough boundary, the AWC source contributes 5,717 records to the combined dataset, representing documented fish presence and activity across waterbodies within the borough.
+
+## Kenai Watershed Forum
+
+Fish survey data collected by Kenai Watershed Forum (KWF) in streams of the Kenai Peninsula from 2021 - 2025. Surveys targeted small stream fish communities associated with End of Anadromy investigation sites.
+
+-   **2021–2024** data (`2021_2024_fish_survey_data.xlsx`) used minnow traps. Fish observations are in the `F_Fish_ID` tab; site coordinates are in the `A_Sample_Event` tab; sampling effort and gear type are in the `C_Sample_Effort` tab.
+-   **2025** data (`2025_fish_survey_data.xlsx`) used both minnow traps and backpack electrofishing. All data are in a single wide-format tab (`T2025_KWF_Stream_Surveys`) collected via an ArcGIS field form; each row is a GPS point with up to six fish observation "slots" per row.
+
+```{r}
+#| label: kwf-lookup
+#| output: false
+
+# 2021–2024: maps F_Fish_ID common names → standardized commonName + scientificName
+species_lookup_kwf_2021_2024 <- read_csv("data/input/lookups/species_lookup_kwf_2021_2024.csv",
+                                         show_col_types = FALSE)
+
+# 2025: maps scientific/family names → commonName + scientificName.
+# Rana sylvatica (wood frog) is intentionally excluded as a non-fish taxon.
+# Gasterosteidae and Cottidae are family-level IDs; scientificName is NA.
+species_lookup_kwf_2025 <- tribble(
+  ~raw_species,               ~commonName,            ~scientificName,
+  "Cottidae",                 "sculpin sp.",          NA,
+  "Gasterosteidae",           "stickleback sp.",      NA,
+  "Oncorhynchus kisutch",     "coho salmon",          "Oncorhynchus kisutch",
+  "Oncorhynchus mykiss",      "rainbow trout",        "Oncorhynchus mykiss",
+  "Oncorhynchus tshawytscha", "Chinook salmon",       "Oncorhynchus tshawytscha",
+  "Salvelinus malma",         "Dolly Varden",         "Salvelinus malma"
+)
+```
+
+```{r}
+#| label: kwf-process
+#| output: false
+
+# --- 2021–2024 ---
+
+kwf_a_event <- read_excel(
+  "data/input/kwf/2021_2024_fish_survey_data.xlsx", sheet = "A_Sample_Event"
+) |>
+  select(site, site_depart_date, decDegLat2 = latitude, decDegLon2 = longitude)
+
+# Site × date combinations where gear was Minnow Trap
+kwf_minnow_events <- read_excel(
+  "data/input/kwf/2021_2024_fish_survey_data.xlsx", sheet = "C_Sample_Effort"
+) |>
+  filter(gear_type == "Minnow Trap") |>
+  select(site, site_depart_date) |>
+  distinct()
+
+kwf_2021_2024 <- read_excel(
+  "data/input/kwf/2021_2024_fish_survey_data.xlsx", sheet = "F_Fish_ID"
+) |>
+  # Keep only fish records from minnow-trap events
+  semi_join(kwf_minnow_events, by = c("site", "site_depart_date")) |>
+  filter(!is.na(species)) |>
+  left_join(kwf_a_event, by = c("site", "site_depart_date")) |>
+  left_join(species_lookup_kwf_2021_2024, by = "species") |>
+  filter(!is.na(commonName)) |>
+  rename(
+    siteID     = site,
+    surveyDate = site_depart_date,
+    lifeStage  = lifestage,
+    abundance  = count
+  ) |>
+  mutate(
+    surveyDate  = as.Date(surveyDate),
+    sampleGears = "Minnow Trap",
+    source      = "KWF_2021_2024"
+  ) |>
+  select(all_of(schema_cols))
+
+# --- 2025 ---
+
+kwf_2025_long <- read_excel(
+  "data/input/kwf/2025_fish_survey_data.xlsx", sheet = "T2025_KWF_Stream_Surveys"
+) |>
+  # Determine gear type at the row level before pivoting.
+  # Two rows have both Trap_deployment_time and Electrofishing_Start_Time filled;
+  # minnow trapping is used for those rows as electrofishing did not occur.
+  mutate(
+    sampleGears = case_when(
+      !is.na(Trap_deployment_time)      ~ "Minnow Trap",
+      !is.na(Electrofishing_Start_Time) ~ "Electrofishing",
+      TRUE                              ~ NA_character_
+    ),
+    siteID     = paste0("2025_", OBJECTID),
+    surveyDate = as.Date(date)
+  ) |>
+  select(
+    siteID, surveyDate, sampleGears,
+    decDegLat2 = esrignss_latitude, decDegLon2 = esrignss_longitude,
+    matches("^Fish_(Species|Count|Life_Stage)_[1-6]$")
+  ) |>
+  # Pivot six fish slots from wide to long
+  pivot_longer(
+    cols          = matches("^Fish_(Species|Count|Life_Stage)_[1-6]$"),
+    names_to      = c(".value", "slot"),
+    names_pattern = "^Fish_(.+)_(\\d)$"
+  ) |>
+  # Remove rows with no fish observed; non-fish taxa absent from the lookup are also dropped
+  filter(!is.na(Species), Species != "None") |>
+  left_join(species_lookup_kwf_2025, by = c("Species" = "raw_species")) |>
+  filter(!is.na(commonName)) |>
+  rename(
+    lifeStage = Life_Stage,
+    abundance = Count
+  ) |>
+  mutate(
+    lifeStage = tolower(lifeStage),
+    abundance = as.integer(abundance),
+    source    = "KWF_2025"
+  ) |>
+  select(all_of(schema_cols))
+
+# --- Combined KWF dataset ---
+
+kwf_harmonized <- bind_rows(kwf_2021_2024, kwf_2025_long)
+
+kwf_clipped <- kwf_harmonized |>
+  filter(!is.na(decDegLon2), !is.na(decDegLat2)) |>
+  st_as_sf(coords = c("decDegLon2", "decDegLat2"), crs = 4326, remove = FALSE) |>
+  st_filter(kpb_boundary)
+```
+
+```{r}
+#| label: kwf-download
+#| echo: false
+
+# Embed combined KWF dataset (2021–2024 + 2025) as a self-contained CSV
+# download link, provided here before the data is merged with other sources.
+kwf_csv_tmp <- tempfile(fileext = ".csv")
+write.csv(kwf_harmonized, kwf_csv_tmp, row.names = FALSE)
+xfun::embed_file(kwf_csv_tmp, name = "kwf_fish_data.csv", text = "Download KWF fish data (.csv)")
+```
+
+```{r}
+#| label: kwf-download-shp
+#| echo: false
+
+# Shapefile download for KWF data — uses kwf_clipped (records with valid
+# coordinates, clipped to KPB boundary). The 25 coordinate-less records
+# present in kwf_harmonized are excluded because shapefiles require geometry.
+kwf_shp_dir <- file.path(tempdir(), "kwf_shp")
+dir.create(kwf_shp_dir, showWarnings = FALSE)
+sf::st_write(kwf_clipped, file.path(kwf_shp_dir, "kwf_fish_data.shp"),
+             delete_dsn = TRUE, quiet = TRUE)
+
+xfun::embed_dir(kwf_shp_dir, name = "kwf_fish_data.zip", text = "Download KWF fish data (.shp, zipped)")
+```
+
+```{r}
+#| label: kwf-parse-raw
+#| eval: false
+
+# Archive: re-run only if source Excel files in data/input/kwf/ are updated.
+# The kwf-process chunk reads directly from the raw Excel files; no pre-processed
+# GeoPackage is needed since the files are small enough to bundle for deployment.
+# Source files:
+#   data/input/kwf/2021_2024_fish_survey_data.xlsx
+#     tabs used: A_Sample_Event, C_Sample_Effort, F_Fish_ID
+#   data/input/kwf/2025_fish_survey_data.xlsx
+#     tab used: T2025_KWF_Stream_Surveys
+```
+
+## Merged Dataset
+
+All sources of fish presence data are synthesized into a single dataset available as a download below on the next section. Here, we share summarized results in table and map form.
+
+```{r}
+#| label: species-lookup
+#| output: false
+
+# Maps AFFI raw species values (common names) to standardized common and
+# scientific names. Entries intentionally omitted from this table
+# (non-fish records and non-fish taxa) are filtered out during the merge.
+species_lookup_affi <- read_csv("data/input/lookups/species_lookup_affi.csv",
+                               show_col_types = FALSE)
+
+# Maps KBNERR/UAF raw species values (scientific names) to common names.
+species_lookup_kbnerr_uaf <- read_csv("data/input/lookups/species_lookup_kbnerr_uaf.csv",
+                                      show_col_types = FALSE)
+```
+
+```{r}
+#| label: merge-all
+#| output: false
+
+kbnerr_uaf_harmonized <- bind_rows(
+  kbnerr_clipped |> select(all_of(base_cols)),
+  uaf_clipped    |> select(all_of(base_cols))
+) |>
+  left_join(species_lookup_kbnerr_uaf, by = "species") |>
+  rename(scientificName = species) |>
+  filter(!is.na(commonName)) |>
+  select(all_of(schema_cols))
+
+all_fish_clipped <- bind_rows(affi_harmonized, kbnerr_uaf_harmonized, awc_clipped, kwf_clipped)
+
+unlink("data/output/kenai_fish_obs.gpkg")
+st_write(all_fish_clipped, "data/output/kenai_fish_obs.gpkg")
+```
+
+```{r}
+#| label: summary-table
+#| echo: false
+
+summary_df <- all_fish_clipped |>
+  st_drop_geometry() |>
+  count(commonName, source) |>
+  pivot_wider(names_from = source, values_from = n, values_fill = 0) |>
+  arrange(commonName) |>
+  mutate(Total = rowSums(across(where(is.integer))))
+
+summary_csv_tmp <- tempfile(fileext = ".csv")
+write.csv(summary_df, summary_csv_tmp, row.names = FALSE)
+xfun::embed_file(summary_csv_tmp, name = "kenai_fish_obs_summary.csv", text = "Download summary table (.csv)")
+```
+
+```{r echo = F}
+#| label: summary-table-render
+
+summary_df |>
+  knitr::kable(caption = "Record counts by species and source") |>
+  kableExtra::kable_styling(bootstrap_options = "striped") |>
+  kableExtra::scroll_box(width = "100%")
+```
+
+```{r}
+#| label: map-all-fish
+
+library(leaflet)
+
+pal <- colorFactor(
+  palette = "Dark2",
+  domain  = all_fish_clipped$source
+)
+
+leaflet(all_fish_clipped) |>
+  addProviderTiles(providers$Esri.WorldTopoMap) |>
+  addCircleMarkers(
+    lng         = ~decDegLon2,
+    lat         = ~decDegLat2,
+    radius      = 4,
+    stroke      = FALSE,
+    fillOpacity = 0.7,
+    color       = ~pal(source),
+    label       = ~paste0(
+      "<b>", commonName, "</b><br>",
+      "Source: ",     source,     "<br>",
+      "Site: ",       siteID,     "<br>",
+      "Date: ",       surveyDate, "<br>",
+      "Life stage: ", lifeStage
+    ) |> lapply(htmltools::HTML)
+  ) |>
+  addLegend(
+    position = "bottomright",
+    pal      = pal,
+    values   = ~source,
+    title    = "Data source",
+    opacity  = 0.8
+  )
+```
+
+## Download
+
+### Download all fish observations
+
+The harmonized dataset is available as a GeoPackage containing all `r nrow(all_fish_clipped)` fish observation records across all sources, clipped to the Kenai Peninsula Borough boundary.
+
+[Download kenai_fish_obs.gpkg](data/output/kenai_fish_obs.gpkg){download="kenai_fish_obs.gpkg"}
+
+### Download all anadromous fish observations
+
+```{r}
+#| label: anadromous-download
+#| output: false
+
+# Anadromous species as defined by ADF&G AWC species codes:
+# https://www.adfg.alaska.gov/sf/SARR/AWC/index.cfm?ADFG=defs.codes
+# Filter by scientificName where a binomial is available; fall back to
+# commonName for the four unresolved groups (NA scientificName in lookup).
+# Note: Oncorhynchus mykiss appears as "steelhead" (AWC source) and
+# "rainbow trout" (KBNERR/UAF/KWF/AFFI) — both are captured via scientificName.
+anadromous_sci <- c(
+  "Salvelinus alpinus",        # Arctic char
+  "Lethenteron camtschaticum", # Arctic lamprey
+  "Coregonus autumnalis",      # Arctic cisco
+  "Coregonus nasus",           # broad whitefish
+  "Coregonus laurettae",       # Bering cisco
+  "Oncorhynchus keta",         # chum salmon
+  "Oncorhynchus kisutch",      # coho salmon
+  "Oncorhynchus clarkii",      # cutthroat trout
+  "Salvelinus malma",          # Dolly Varden
+  "Acipenser medirostris",     # green sturgeon
+  "Coregonus pidschian",       # humpback whitefish
+  "Oncorhynchus tshawytscha",  # Chinook salmon
+  "Coregonus sardinella",      # least cisco
+  "Lethenteron ayresii",       # river lamprey
+  "Spirinchus thaleichthys",   # longfin smelt
+  "Osmerus mordax",            # rainbow smelt
+  "Thaleichthys pacificus",    # eulachon
+  "Oncorhynchus gorbuscha",    # pink salmon
+  "Entosphenus tridentatus",   # Pacific lamprey
+  "Oncorhynchus nerka",        # sockeye salmon
+  "Stenodus leucichthys",      # inconnu
+  "Oncorhynchus mykiss",       # steelhead / rainbow trout
+  "Acipenser transmontanus"    # white sturgeon
+)
+
+# Unresolved groups (scientificName = NA in lookup): matched by commonName
+anadromous_common_nr <- c("lamprey sp.", "smelt sp.", "sturgeon sp.", "whitefish sp.")
+
+anadromous_clipped <- all_fish_clipped |>
+  filter(scientificName %in% anadromous_sci | commonName %in% anadromous_common_nr)
+
+unlink("data/output/kenai_anadromous_fish_obs.gpkg")
+st_write(anadromous_clipped, "data/output/kenai_anadromous_fish_obs.gpkg")
+```
+
+Anadromous species are defined here as those listed in the [ADF&G Anadromous Waters Catalog (AWC) species codes](https://www.adfg.alaska.gov/sf/SARR/AWC/index.cfm?ADFG=defs.codes). The filtered dataset contains `r nrow(anadromous_clipped)` records across all sources. Note that *Oncorhynchus mykiss* appears as both "steelhead" (AWC source) and "rainbow trout" (all other sources) in this dataset; both are included since the AWC recognizes this species as anadromous, though individual survey records cannot distinguish anadromous-run fish from resident fish.
+
+[Download kenai_anadromous_fish_obs.gpkg](data/output/kenai_anadromous_fish_obs.gpkg){download="kenai_anadromous_fish_obs.gpkg"}
+
