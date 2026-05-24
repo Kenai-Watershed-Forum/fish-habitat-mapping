@@ -4,6 +4,7 @@ project:
 
 book:
   title: "fish-habitat-mapping"
+  repo-url: https://github.com/Kenai-Watershed-Forum/fish-habitat-mapping
   author: "Benjamin Meyer"
   date: "5/23/2026"
   chapters:
