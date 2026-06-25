@@ -52,7 +52,7 @@ Code comments, callout box headers, and ArcGIS Pro numbered step lists are less 
 
 ## Data Folder Structure
 
-```
+```         
 data/
   input/
     fish_obs/          ← all existing fish observation source data
@@ -258,14 +258,14 @@ Each pipeline step documents both the R implementation and the equivalent ArcGIS
 
 ### Pipeline steps
 
-1. **Load data** — reads three inputs, aligns CRS to streams layer
-2. **Network classification** — uses `st_intersects()` to find reaches containing fish points; classifies all reaches with `OUT_DIST > max(fish reach OUT_DIST)` as `"Unknown"`, remainder as `"Present"`. Simplified vs. topological trace; see callout in chapter.
-3. **Filter to accessible unknown reaches** — `filter(fishstatus == "Unknown", GRADIENT < GRADIENT_MAX)`
-4. **Extract launch points** — `st_line_sample(geometry, sample = 0)` extracts downstream (start) vertex of each reach, assuming mouth-to-source digitization (consistent with `OUT_DIST` increasing toward headwaters)
-5. **Landscape stratification** — `st_join(launch_points, hucs, join = st_within)`; points outside all polygons dropped
-6. **Quota calculation** — proportional allocation with largest-remainder rounding correction to guarantee total = `TARGET_N`
-7. **Sampling** — `slice_sample()` per stratum inside a nested tibble pipeline
-8. **Export** — `st_write()` to GeoPackage; summary kable table and leaflet map rendered as visible output
+1.  **Load data** — reads three inputs, aligns CRS to streams layer
+2.  **Network classification** — uses `st_intersects()` to find reaches containing fish points; classifies all reaches with `OUT_DIST > max(fish reach OUT_DIST)` as `"Unknown"`, remainder as `"Present"`. Simplified vs. topological trace; see callout in chapter.
+3.  **Filter to accessible unknown reaches** — `filter(fishstatus == "Unknown", GRADIENT < GRADIENT_MAX)`
+4.  **Extract launch points** — `st_line_sample(geometry, sample = 0)` extracts downstream (start) vertex of each reach, assuming mouth-to-source digitization (consistent with `OUT_DIST` increasing toward headwaters)
+5.  **Landscape stratification** — `st_join(launch_points, hucs, join = st_within)`; points outside all polygons dropped
+6.  **Quota calculation** — proportional allocation with largest-remainder rounding correction to guarantee total = `TARGET_N`
+7.  **Sampling** — `slice_sample()` per stratum inside a nested tibble pipeline
+8.  **Export** — `st_write()` to GeoPackage; summary kable table and leaflet map rendered as visible output
 
 ### Known limitations
 
