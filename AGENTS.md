@@ -1,6 +1,8 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-05-23 (added focus_areas.qmd and fish_status.qmd chapters)
+Last updated: 2026-06-24 (added field_site_selection.qmd; reorganized data/input/ folder structure; added writing style standards)
+
+Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
 ------------------------------------------------------------------------
 
@@ -15,12 +17,13 @@ This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habi
 | `focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. |
 | `existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** |
 | `fish_status.qmd` | Knowledge Status of Fish Presence/Absence — planned workflow: (1) build most-upstream anadromous fish observation layer from `existing_fish_obs.qmd` output + AWC terminal endpoints, (2) snap to NetMap channel reaches, (3) use Trace Network tools to assign most-upstream status, (4) label all segments as Fish Present / Fish Absent / Unknown. Early draft, no analysis code yet. |
+| `field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network) and `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines in ArcGIS). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. |
 | `summary.qmd` | Summary |
 | `references.qmd` | References |
 
 The book renders to HTML and is published via **GitHub Pages** (see Deployment section). Output goes to `docs/` (`output-dir: docs` in `_quarto.yml`).
 
-> **Note:** All sections below (Data Sources, Output Schema, Standardized Vocabularies, Current State, Chunk Structure) pertain specifically to the `existing_fish_obs.qmd` chapter. As new chapters are added, their context should be documented in new sections here.
+> **Note:** The Data Sources, Output Schema, Standardized Vocabularies, and Chunk Structure sections below pertain specifically to `existing_fish_obs.qmd`. The `field_site_selection.qmd` chapter is documented in its own section near the bottom of this file.
 
 ------------------------------------------------------------------------
 
@@ -32,23 +35,61 @@ This is a long-term monitoring project. Code must remain readable and editable b
 
 Raw data files are received from researchers and must remain untouched.
 
+### Writing style
+
+Narrative prose in book chapters should read like a scientist wrote it, not an AI assistant. Specifically avoid:
+
+- Em-dashes used as stylistic separators (use a comma, colon, or rewrite the sentence)
+- Openers like "This chapter documents/requires/takes..."
+- Constructions like "The result is a sample that is statistically sound..."
+- "ensures", "leverages", "facilitates", "seamlessly"
+- Closing phrases like "for use in future modeling and field navigation applications"
+- Overly smooth transitions that add no information
+
+Code comments, callout box headers, and ArcGIS Pro numbered step lists are less subject to this constraint; focus on the connecting prose paragraphs.
+
+------------------------------------------------------------------------
+
+## Data Folder Structure
+
+```
+data/
+  input/
+    fish_obs/          ← all existing fish observation source data
+      affi/            ← AFFI Excel + pre-processed affi_clipped.gpkg
+      awc/             ← AWC GDB + pre-processed awc_clipped.gpkg
+      kbnerr/          ← KBNERR Excel files (2006, 2008, 2011)
+      kwf/             ← KWF Excel files (2021-2024, 2025)
+      uaf/             ← UAF EPSCoR Excel files (2015, 2016)
+      lookups/         ← species lookup CSVs (read at render time)
+    kpb_boundary/      ← KPB boundary GeoPackage (used for clipping)
+    netmap/            ← NetMap stream network + GIS-derived products
+                          netmap_draft.gpkg      (draft NetMap for focus HUCs)
+                          awc_snapped.gpkg       (AWC obs snapped to NetMap lines)
+    focus_hucs/        ← HUC boundary polygons for stratification
+  output/
+    kenai_fish_obs.gpkg           ← merged harmonized fish obs (from existing_fish_obs.qmd)
+    field_sites/
+      stratified_survey_sites.gpkg  ← sampled field sites (from field_site_selection.qmd)
+```
+
 ------------------------------------------------------------------------
 
 ## Data Sources
 
-All raw data lives under `data/input/`. All outputs go to `data/output/`.
+All raw data lives under `data/input/fish_obs/`. All outputs go to `data/output/`.
 
 | Source label | Files | Notes |
 |----|----|----|
-| `AFFI` | `data/input/affi/AFFI_DataExport_8Aug2024.xlsx` | Multi-tab relational DB; filtered to South Central region. Pre-processed output saved to `data/input/affi/affi_clipped.gpkg` so the large Excel file does not need to be bundled for deployment. |
-| `KBNERR_2006` | `data/input/kbnerr/HWS_Field_Data_2006_FINAL.xls` | Tabs: `FISH_CT`, `MASTER LAND REACH FISH` |
-| `KBNERR_2008` | `data/input/kbnerr/Final Fish Data_2008.xls` | No coordinates; borrowed from 2006 master |
-| `KBNERR_2011` | `data/input/kbnerr/HWS_2011_data_111011_cw_review.xlsx` | Coordinates as UTM Zone 5N; reprojected to WGS84 |
-| `UAF_EPSCoR_2015` | `data/input/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx` | Tabs: `B Fishing Site Info`, `C Diet & LW Data` |
-| `UAF_EPSCoR_2016` | `data/input/uaf/2016_EPSCoR_Aquatic_Ecology_Database.xlsx` | Same tab structure; 2016 coordinates are `**` placeholders — use 2015 coords |
-| `AWC_2025` | `data/input/awc/awc_2025.gdb` (layer: `awc_points_2025`) | ADF&G Anadromous Waters Catalog — catalog of documented fish presence/use compiled from many sources over many years, not individual dated surveys. `surveyDate` and `abundance` are `NA`. Species codes parsed from packed string (e.g. `"COrs"`) using `species_lookup_awc` and `lifestage_lookup_awc`. Pre-processed output saved to `data/input/awc/awc_clipped.gpkg` so the GDB does not need to be bundled for deployment. |
-| `KWF_2021_2024` | `data/input/kwf/2021_2024_fish_survey_data.xlsx` | 3-tab relational DB: `F_Fish_ID` (observations), `A_Sample_Event` (coordinates), `C_Sample_Effort` (gear). Only Minnow Trap records retained; Seine and Hook-and-Line excluded. |
-| `KWF_2025` | `data/input/kwf/2025_fish_survey_data.xlsx` | Single wide-format tab (`T2025_KWF_Stream_Surveys`) from ArcGIS field form. Up to 6 fish slots per GPS point row; pivoted long. Rows with no fish detected filtered out. |
+| `AFFI` | `data/input/fish_obs/affi/AFFI_DataExport_8Aug2024.xlsx` | Multi-tab relational DB; filtered to South Central region. Pre-processed output saved to `data/input/fish_obs/affi/affi_clipped.gpkg` so the large Excel file does not need to be bundled for deployment. |
+| `KBNERR_2006` | `data/input/fish_obs/kbnerr/HWS_Field_Data_2006_FINAL.xls` | Tabs: `FISH_CT`, `MASTER LAND REACH FISH` |
+| `KBNERR_2008` | `data/input/fish_obs/kbnerr/Final Fish Data_2008.xls` | No coordinates; borrowed from 2006 master |
+| `KBNERR_2011` | `data/input/fish_obs/kbnerr/HWS_2011_data_111011_cw_review.xlsx` | Coordinates as UTM Zone 5N; reprojected to WGS84 |
+| `UAF_EPSCoR_2015` | `data/input/fish_obs/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx` | Tabs: `B Fishing Site Info`, `C Diet & LW Data` |
+| `UAF_EPSCoR_2016` | `data/input/fish_obs/uaf/2016_EPSCoR_Aquatic_Ecology_Database.xlsx` | Same tab structure; 2016 coordinates are `**` placeholders — use 2015 coords |
+| `AWC_2025` | `data/input/fish_obs/awc/awc_2025.gdb` (layer: `awc_points_2025`) | ADF&G Anadromous Waters Catalog — catalog of documented fish presence/use compiled from many sources over many years, not individual dated surveys. `surveyDate` and `abundance` are `NA`. Species codes parsed from packed string (e.g. `"COrs"`) using `species_lookup_awc` and `lifestage_lookup_awc`. Pre-processed output saved to `data/input/fish_obs/awc/awc_clipped.gpkg` so the GDB does not need to be bundled for deployment. |
+| `KWF_2021_2024` | `data/input/fish_obs/kwf/2021_2024_fish_survey_data.xlsx` | 3-tab relational DB: `F_Fish_ID` (observations), `A_Sample_Event` (coordinates), `C_Sample_Effort` (gear). Only Minnow Trap records retained; Seine and Hook-and-Line excluded. |
+| `KWF_2025` | `data/input/fish_obs/kwf/2025_fish_survey_data.xlsx` | Single wide-format tab (`T2025_KWF_Stream_Surveys`) from ArcGIS field form. Up to 6 fish slots per GPS point row; pivoted long. Rows with no fish detected filtered out. |
 
 KPB boundary: `data/input/kpb_boundary/kpb_boundary.gpkg` (reprojected to EPSG:4326 for clipping). A `.shp` version also exists in the same folder but the `.gpkg` is used for rendering and deployment.
 
@@ -77,7 +118,7 @@ All data sources are harmonized into a single schema. Each row is one site × su
 
 ### Species name lookup CSVs
 
-Larger species lookup tables are stored as CSV files in `data/input/lookups/` and read into the QMD via `read_csv()`. **To add a species mapping, edit the relevant CSV directly** — no R editing required. Smaller source-specific format lookups remain as inline `tribble()` calls in the QMD.
+Larger species lookup tables are stored as CSV files in `data/input/fish_obs/lookups/` and read into the QMD via `read_csv()`. **To add a species mapping, edit the relevant CSV directly** — no R editing required. Smaller source-specific format lookups remain as inline `tribble()` calls in the QMD.
 
 | File | Used by chunk | Purpose |
 |----|----|----|
@@ -186,6 +227,53 @@ Note: the AFFI section uses `%>%` (magrittr pipe) in places due to its ChatGPT-g
 
 ------------------------------------------------------------------------
 
+## field_site_selection.qmd
+
+### Purpose
+
+Generates candidate field survey sites for the Last Fish Observed (LFO) method using a stratified proportional random sampling design. Takes two GIS inputs prepared in ArcGIS Pro and performs all classification, filtering, and sampling in R. All chunks are `eval: false` pending the GIS input files.
+
+Each pipeline step documents both the R implementation and the equivalent ArcGIS Pro tool workflow.
+
+### Inputs
+
+| File | Path | Notes |
+|----|----|----|
+| Draft NetMap stream network | `data/input/netmap/netmap_draft.gpkg` | Must include `GRADIENT` (unitless proportion) and `OUT_DIST` (km to mouth) attributes |
+| Snapped AWC fish observations | `data/input/netmap/awc_snapped.gpkg` | AWC presence points manually snapped to NetMap lines in ArcGIS Pro |
+| Focus HUC boundaries | `data/input/focus_hucs/focus_hucs.gpkg` | Polygon layer; stratification field set by `STRATIFY_BY` parameter |
+
+### Output
+
+`data/output/field_sites/stratified_survey_sites.gpkg`
+
+### User parameters (top of script)
+
+| Parameter | Default | Meaning |
+|----|----|----|
+| `TARGET_N` | 150 | Total field sites to select |
+| `GRADIENT_MAX` | 0.20 | Gradient threshold above which reaches are considered inaccessible (unitless, not percent) |
+| `STRATIFY_BY` | `"huc_name"` | Column in the HUC layer to use as stratification variable |
+| `SET_SEED` | 8419 | Random seed for reproducible sampling |
+
+### Pipeline steps
+
+1. **Load data** — reads three inputs, aligns CRS to streams layer
+2. **Network classification** — uses `st_intersects()` to find reaches containing fish points; classifies all reaches with `OUT_DIST > max(fish reach OUT_DIST)` as `"Unknown"`, remainder as `"Present"`. Simplified vs. topological trace; see callout in chapter.
+3. **Filter to accessible unknown reaches** — `filter(fishstatus == "Unknown", GRADIENT < GRADIENT_MAX)`
+4. **Extract launch points** — `st_line_sample(geometry, sample = 0)` extracts downstream (start) vertex of each reach, assuming mouth-to-source digitization (consistent with `OUT_DIST` increasing toward headwaters)
+5. **Landscape stratification** — `st_join(launch_points, hucs, join = st_within)`; points outside all polygons dropped
+6. **Quota calculation** — proportional allocation with largest-remainder rounding correction to guarantee total = `TARGET_N`
+7. **Sampling** — `slice_sample()` per stratum inside a nested tibble pipeline
+8. **Export** — `st_write()` to GeoPackage; summary kable table and leaflet map rendered as visible output
+
+### Known limitations
+
+- The `OUT_DIST` classification approach is a simplification; on branching networks it may over-assign `"Present"` to untested tributaries. The ArcGIS Trace Network approach (Chapter 4) provides the topologically rigorous alternative.
+- Gradient barrier filter removes individual steep segments only — flat reaches above a cascade are retained. Upstream pruning from barriers should be done in ArcGIS before exporting the input NetMap layer if topological accuracy is required.
+
+------------------------------------------------------------------------
+
 ## Deployment
 
 ### GitHub Pages (current method)
@@ -203,6 +291,6 @@ The book is published via GitHub Pages. Rendered output goes to `docs/` (`output
 
 - The AFFI Excel (19MB) and AWC GDB are excluded from the repo; pre-processed GeoPackages are used instead.
 - **Never commit raw multi-file formats** (shapefiles, GDBs) — always use single-file GeoPackages.
-- If adding a new large data source, save a pre-processed GeoPackage to `data/input/<source>/`, archive raw processing in an `eval: false` chunk, and read from the GeoPackage in the active chunk.
-- `data/input/lookups/` CSV files must be included — they are read at render time.
-- `data/output/` should contain only `kenai_fish_obs.gpkg`.
+- If adding a new large data source, save a pre-processed GeoPackage to `data/input/fish_obs/<source>/`, archive raw processing in an `eval: false` chunk, and read from the GeoPackage in the active chunk.
+- `data/input/fish_obs/lookups/` CSV files must be included in the repo — they are read at render time.
+- `data/output/` contains `kenai_fish_obs.gpkg` (from `existing_fish_obs.qmd`) and `field_sites/stratified_survey_sites.gpkg` (from `field_site_selection.qmd`).

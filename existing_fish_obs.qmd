@@ -59,7 +59,7 @@ Alaska Department of Fish and Game's Alaska Freshwater Fish Inventory: <https://
 # Reads pre-processed GeoPackages derived from AFFI_DataExport_8Aug2024.xlsx
 # and kpb_boundary shapefile. If source data changes, re-run the affi-parse-raw
 # chunk below to regenerate affi_clipped.gpkg, then re-render this document.
-affi_harmonized <- st_read("data/input/affi/affi_clipped.gpkg", quiet = TRUE)
+affi_harmonized <- st_read("data/input/fish_obs/affi/affi_clipped.gpkg", quiet = TRUE)
 
 kpb_boundary <- st_read("data/input/kpb_boundary/kpb_boundary.gpkg", quiet = TRUE) |>
   st_transform(4326)
@@ -74,7 +74,7 @@ kpb_boundary <- st_read("data/input/kpb_boundary/kpb_boundary.gpkg", quiet = TRU
 # clips to KPB, and writes affi_clipped.gpkg.
 # Note: this code was originally generated with AI assistance (ChatGPT, 3/4/2026)
 # due to the complex multi-tab relational structure of the AFFI export.
-dat <- "data/input/affi/AFFI_DataExport_8Aug2024.xlsx"
+dat <- "data/input/fish_obs/affi/AFFI_DataExport_8Aug2024.xlsx"
 
 site      <- read_excel(dat, sheet = "Site")
 survey    <- read_excel(dat, sheet = "Survey")
@@ -188,7 +188,7 @@ affi_harmonized <- fish_sc_clipped |>
   filter(!is.na(commonName)) |>
   select(all_of(schema_cols))
 
-st_write(affi_harmonized, "data/input/affi/affi_clipped.gpkg", delete_dsn = TRUE)
+st_write(affi_harmonized, "data/input/fish_obs/affi/affi_clipped.gpkg", delete_dsn = TRUE)
 ```
 
 ### AFFI Data Interpretation
@@ -244,7 +244,7 @@ Data from `HWS_Field_Data_2006_FINAL.xls`. Fish observations are in the `FISH_CT
 ```{r}
 #| output: false
 
-kbnerr_file <- "data/input/kbnerr/HWS_Field_Data_2006_FINAL.xls"
+kbnerr_file <- "data/input/fish_obs/kbnerr/HWS_Field_Data_2006_FINAL.xls"
 
 # ----------------------------
 # Read sheets — keep only needed columns
@@ -301,7 +301,7 @@ Gear is not recorded in this file; electrofishing is assumed based on the presen
 ```{r}
 #| output: false
 
-kbnerr_2008 <- read_excel("data/input/kbnerr/Final Fish Data_2008.xls", sheet = "Sheet1") |>
+kbnerr_2008 <- read_excel("data/input/fish_obs/kbnerr/Final Fish Data_2008.xls", sheet = "Sheet1") |>
   select(Site_ID, Date, Subreach, Species, `Length (cm)`, `Weight (g)`, Comments) |>
   filter(Species != "NO FISH") |>
   mutate(
@@ -335,7 +335,7 @@ Gear is not recorded as a column; all surveys are electrofishing based on the `E
 #| output: false
 
 # Coordinates from Form1_Site — UTM Zone 5N reprojected to WGS84
-coords_2011 <- read_excel("data/input/kbnerr/HWS_2011_data_111011_cw_review.xlsx",
+coords_2011 <- read_excel("data/input/fish_obs/kbnerr/HWS_2011_data_111011_cw_review.xlsx",
                           sheet = "Form1_Site", col_names = FALSE, skip = 2) |>
   select(siteID = 1, utm_n = 4, utm_e = 5) |>
   filter(!is.na(siteID), utm_n > 0, utm_e > 0) |>
@@ -349,7 +349,7 @@ coords_2011 <- read_excel("data/input/kbnerr/HWS_2011_data_111011_cw_review.xlsx
   ) |>
   st_drop_geometry()
 
-kbnerr_2011 <- read_excel("data/input/kbnerr/HWS_2011_data_111011_cw_review.xlsx",
+kbnerr_2011 <- read_excel("data/input/fish_obs/kbnerr/HWS_2011_data_111011_cw_review.xlsx",
                           sheet = "Form2_Fish") |>
   rename(siteID = `Site ID`, species_code = Species) |>
   filter(!is.na(species_code)) |>
@@ -397,12 +397,12 @@ Data from two field seasons (2015, 2016) collected by UAF EPSCoR in streams of t
 #| output: false
 
 # Species lookup: raw labels from both years → scientific names
-species_lookup_uaf <- read_csv("data/input/lookups/species_lookup_uaf.csv",
+species_lookup_uaf <- read_csv("data/input/fish_obs/lookups/species_lookup_uaf.csv",
                                show_col_types = FALSE)
 
 # Coordinates from 2015 site sheet (2016 sheet has placeholder ** values)
 # One coordinate pair per Site ID; sites are stable across both years
-uaf_coords <- read_excel("data/input/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx",
+uaf_coords <- read_excel("data/input/fish_obs/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx",
                          sheet = "B Fishing Site Info") |>
   select(`Site ID`, Latitude, Longitude) |>
   group_by(`Site ID`) |>
@@ -431,10 +431,10 @@ process_uaf_diet <- function(file, year_label) {
 }
 
 uaf_2015 <- process_uaf_diet(
-  "data/input/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx", "2015"
+  "data/input/fish_obs/uaf/2015_EPSCoR_Aquatic_Ecology_Database.xlsx", "2015"
 )
 uaf_2016 <- process_uaf_diet(
-  "data/input/uaf/2016_EPSCoR_Aquatic_Ecology_Database.xlsx", "2016"
+  "data/input/fish_obs/uaf/2016_EPSCoR_Aquatic_Ecology_Database.xlsx", "2016"
 )
 
 uaf_clipped <- bind_rows(uaf_2015, uaf_2016) |>
@@ -455,7 +455,7 @@ The Alaska Department of Fish and Game's Anadromous Waters Catalog (AWC) is a st
 
 # Maps AWC two-letter species codes to standardized common and scientific names.
 # scientificName is NA where identification cannot be resolved to genus + species.
-species_lookup_awc <- read_csv("data/input/lookups/species_lookup_awc.csv",
+species_lookup_awc <- read_csv("data/input/fish_obs/lookups/species_lookup_awc.csv",
                                show_col_types = FALSE)
 
 # Maps single AWC activity letters to lifeStage values.
@@ -484,7 +484,7 @@ base_cols <- c("siteID", "surveyDate", "species", "lifeStage",
 # Reads the pre-processed GeoPackage derived from awc_2025.gdb.
 # If the source GDB changes, re-run the awc-parse-raw chunk below to
 # regenerate awc_clipped.gpkg, then re-render this document.
-awc_clipped <- st_read("data/input/awc/awc_clipped.gpkg", quiet = TRUE)
+awc_clipped <- st_read("data/input/fish_obs/awc/awc_clipped.gpkg", quiet = TRUE)
 ```
 
 ```{r}
@@ -495,7 +495,7 @@ awc_clipped <- st_read("data/input/awc/awc_clipped.gpkg", quiet = TRUE)
 # Parses the raw GDB, expands packed species/activity codes to one row per
 # species × life stage combination, clips to KPB, and writes awc_clipped.gpkg.
 awc_clipped <- st_read(
-  "data/input/awc/awc_2025.gdb",
+  "data/input/fish_obs/awc/awc_2025.gdb",
   layer = "awc_points_2025",
   quiet = TRUE
 ) |>
@@ -526,7 +526,7 @@ awc_clipped <- st_read(
   st_as_sf(coords = c("decDegLon2", "decDegLat2"), crs = 4326, remove = FALSE) |>
   st_filter(kpb_boundary)
 
-st_write(awc_clipped, "data/input/awc/awc_clipped.gpkg", delete_dsn = TRUE)
+st_write(awc_clipped, "data/input/fish_obs/awc/awc_clipped.gpkg", delete_dsn = TRUE)
 ```
 
 After clipping to the Kenai Peninsula Borough boundary, the AWC source contributes 5,717 records to the combined dataset, representing documented fish presence and activity across waterbodies within the borough.
@@ -543,7 +543,7 @@ Fish survey data collected by Kenai Watershed Forum (KWF) in streams of the Kena
 #| output: false
 
 # 2021–2024: maps F_Fish_ID common names → standardized commonName + scientificName
-species_lookup_kwf_2021_2024 <- read_csv("data/input/lookups/species_lookup_kwf_2021_2024.csv",
+species_lookup_kwf_2021_2024 <- read_csv("data/input/fish_obs/lookups/species_lookup_kwf_2021_2024.csv",
                                          show_col_types = FALSE)
 
 # 2025: maps scientific/family names → commonName + scientificName.
@@ -567,20 +567,20 @@ species_lookup_kwf_2025 <- tribble(
 # --- 2021–2024 ---
 
 kwf_a_event <- read_excel(
-  "data/input/kwf/2021_2024_fish_survey_data.xlsx", sheet = "A_Sample_Event"
+  "data/input/fish_obs/kwf/2021_2024_fish_survey_data.xlsx", sheet = "A_Sample_Event"
 ) |>
   select(site, site_depart_date, decDegLat2 = latitude, decDegLon2 = longitude)
 
 # Site × date combinations where gear was Minnow Trap
 kwf_minnow_events <- read_excel(
-  "data/input/kwf/2021_2024_fish_survey_data.xlsx", sheet = "C_Sample_Effort"
+  "data/input/fish_obs/kwf/2021_2024_fish_survey_data.xlsx", sheet = "C_Sample_Effort"
 ) |>
   filter(gear_type == "Minnow Trap") |>
   select(site, site_depart_date) |>
   distinct()
 
 kwf_2021_2024 <- read_excel(
-  "data/input/kwf/2021_2024_fish_survey_data.xlsx", sheet = "F_Fish_ID"
+  "data/input/fish_obs/kwf/2021_2024_fish_survey_data.xlsx", sheet = "F_Fish_ID"
 ) |>
   # Keep only fish records from minnow-trap events
   semi_join(kwf_minnow_events, by = c("site", "site_depart_date")) |>
@@ -604,7 +604,7 @@ kwf_2021_2024 <- read_excel(
 # --- 2025 ---
 
 kwf_2025_long <- read_excel(
-  "data/input/kwf/2025_fish_survey_data.xlsx", sheet = "T2025_KWF_Stream_Surveys"
+  "data/input/fish_obs/kwf/2025_fish_survey_data.xlsx", sheet = "T2025_KWF_Stream_Surveys"
 ) |>
   # Determine gear type at the row level before pivoting.
   # Two rows have both Trap_deployment_time and Electrofishing_Start_Time filled;
@@ -684,13 +684,13 @@ xfun::embed_dir(kwf_shp_dir, name = "kwf_fish_data.zip", text = "Download KWF fi
 #| label: kwf-parse-raw
 #| eval: false
 
-# Archive: re-run only if source Excel files in data/input/kwf/ are updated.
+# Archive: re-run only if source Excel files in data/input/fish_obs/kwf/ are updated.
 # The kwf-process chunk reads directly from the raw Excel files; no pre-processed
 # GeoPackage is needed since the files are small enough to bundle for deployment.
 # Source files:
-#   data/input/kwf/2021_2024_fish_survey_data.xlsx
+#   data/input/fish_obs/kwf/2021_2024_fish_survey_data.xlsx
 #     tabs used: A_Sample_Event, C_Sample_Effort, F_Fish_ID
-#   data/input/kwf/2025_fish_survey_data.xlsx
+#   data/input/fish_obs/kwf/2025_fish_survey_data.xlsx
 #     tab used: T2025_KWF_Stream_Surveys
 ```
 
@@ -705,11 +705,11 @@ All sources of fish presence data are synthesized into a single dataset availabl
 # Maps AFFI raw species values (common names) to standardized common and
 # scientific names. Entries intentionally omitted from this table
 # (non-fish records and non-fish taxa) are filtered out during the merge.
-species_lookup_affi <- read_csv("data/input/lookups/species_lookup_affi.csv",
+species_lookup_affi <- read_csv("data/input/fish_obs/lookups/species_lookup_affi.csv",
                                show_col_types = FALSE)
 
 # Maps KBNERR/UAF raw species values (scientific names) to common names.
-species_lookup_kbnerr_uaf <- read_csv("data/input/lookups/species_lookup_kbnerr_uaf.csv",
+species_lookup_kbnerr_uaf <- read_csv("data/input/fish_obs/lookups/species_lookup_kbnerr_uaf.csv",
                                       show_col_types = FALSE)
 ```
 

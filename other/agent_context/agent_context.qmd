@@ -1,0 +1,24 @@
+---
+title: "agent_context"
+format: html
+---
+
+3/26/2026
+
+NOTES ON RAW DATA In general, raw data sources for this project are untouched. As in, we received the data as-is from the researcher.
+
+QUARTO NOTES I want this project to be able to be rendered as both .html (hosted on GitHub Pages) or as a PDF. I want the reader to be able to access and download the PDF.
+
+NOTE ON AGENTIC COLLABORATION STANDARDS I will use agentic coding assistance to develop and complete this project. However, I do not want to create and implement code without first understanding how it works. The ability for future scientists to be able to read, edit, and apply the code in this project is important, as it is a long-term monitoring project. Therefore, the agent will proceed with implementing code edits only after confirming with the user that they understand what is happening.
+
+5/12/2026 
+
+I have placed new excel sheets in data/input/kwf.I need to do two things with these data sources, described below:
+
+a)  integrate 2021_2024_fish_survey_data.xlsx and 2025_fish_survey_data.xlsx into existing_fish_obs.qmd. Add a new section called 'Kenai Watershed Forum' after the 'Anadromous Waters Catalog (AWC)' section. The 2021- 2024 data is all minnow traps. Fish observations are in the tab F_Fish_ID and, sample effort is in C_Sample_Effort, and sampe event (e.g. coordinates) are in A_Sample_Event. The 2025 data uses both minnow traps and a backpack electrofisher. We do not need to retain columns where all observations are blank.
+
+b)  I need a seperate download that includes just the combined KWF data from 2021-2024 and 2025. All in one single dataframe, in a consistent format. I recommend integrating this request in to the above request and providing this as an intermediate download en route to integrating KWF data with the other data sources.
+
+6/24/2026 
+
+I have been using google gemini to develop a complex script that will aid in selecting fieldwork points for this project. The conversation is at https://gemini.google.com/share/d/1lWGWjKAzxFRcan execute the tasks we developed, I hope you can access this full conversation - if not i will copy and paste it to make it accessible to poist assistant. Gemini appears to be unable to provide me with this qmd download i have requested at the end. I would like posit assistant to help create this requested script and put its contents in chapter 4 of the quarto book in this project.

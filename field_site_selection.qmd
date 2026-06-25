@@ -1,0 +1,386 @@
+---
+title: "Field Site Selection"
+subtitle: "Stratified Proportional Random Sampling of Candidate Survey Sites"
+author:
+  - name: "Kenai Watershed Forum"
+    email: ben.meyer@kenaiwatershed.org
+date: last-modified
+toc: true
+toc-location: left
+toc-depth: 3
+toc-title: "Contents"
+number-sections: true
+execute:
+  message: false
+  warning: false
+  eval: false
+---
+
+::: callout-important
+## Implementation status
+
+This chapter is a working draft. All code blocks are set to `eval: false` because the two input files have not yet been placed in `data/input/netmap/`:
+
+-   `netmap_draft.gpkg`: the draft NetMap stream network for project focus HUCs
+-   `awc_snapped.gpkg`: AWC fish observation points snapped to NetMap lines in ArcGIS Pro
+
+Once both files are in place, set `eval: false` to `eval: true` in this chapter's YAML to render live outputs.
+:::
+
+## Overview
+
+Field crews conducting Last Fish Observed (LFO) surveys begin at a stream access point, walk upstream, and record the furthest point where fish are found. Selecting those access points is the purpose of this chapter. Sites are drawn from reaches where fish presence has not been documented, and the resulting survey data calibrate models of how far upstream anadromous fish reach in each watershed.
+
+Two GIS files prepared in ArcGIS Pro serve as inputs: the draft NetMap stream network and a layer of AWC fish observation points snapped to the NetMap lines. From these, the script classifies reaches by fish presence status, filters to accessible candidates, extracts launch points, assigns landscape strata, and draws a proportional random sample.
+
+Each step includes a description of the equivalent ArcGIS Pro workflow for reference.
+
+### Design rationale
+
+Simple random sampling of stream reaches skews site selection toward low-elevation, high-density valley networks, which are already well-sampled. In a **stratified proportional random sampling** design, candidate reaches are divided into landscape strata by watershed unit, and sites are allocated in proportion to each stratum's share of the total pool. The final sample covers the full elevational and geographic range of the study area without overrepresenting any single watershed type.
+
+### Workflow
+
+```{mermaid}
+flowchart TD
+  A["GIS inputs\nNetMap stream network\nSnapped AWC fish observations"] --> B["Network classification\n(Present vs. Unknown)"]
+  B --> C["Gradient barrier filter\n(remove inaccessible reaches)"]
+  C --> D["Extract launch points\n(downstream vertex per reach)"]
+  D --> E["Stratification overlay\n(join HUC attributes)"]
+  E --> F["Proportional quota allocation\n& stratified random sample"]
+  F --> G["Export\ndata/output/field_sites/"]
+```
+
+## Configuration {#sec-config}
+
+All user-adjustable parameters are set in this block. The rest of the script reads directly from these values, so changing the sample size, gradient threshold, or stratification variable requires edits only here.
+
+```{r}
+#| label: config
+#| include: false
+
+library(sf)
+library(tidyverse)
+
+# ---- USER PARAMETERS ----
+
+# Total number of field survey sites to select
+TARGET_N <- 150
+
+# Maximum channel gradient for accessible reaches (unitless proportion, not percent)
+# Reaches at or above this threshold are assumed inaccessible to anadromous fish
+# due to steep cascades or waterfalls. NetMap stores this as the GRADIENT attribute.
+GRADIENT_MAX <- 0.20
+
+# Column in the HUC boundary layer to use as the stratification variable
+STRATIFY_BY <- "huc_name"
+
+# Random seed for reproducible sampling
+SET_SEED <- 8419
+```
+
+## Data {#sec-data}
+
+### Input files
+
+Three spatial inputs are required:
+
+| Dataset | Path | Description |
+|---|---|---|
+| Draft NetMap stream network | `data/input/netmap/netmap_draft.gpkg` | NetMap channel reaches for project focus HUCs |
+| Snapped AWC fish observations | `data/input/netmap/awc_snapped.gpkg` | AWC fish presence points snapped to NetMap lines in ArcGIS Pro |
+| Focus HUC boundaries | `data/input/focus_hucs/focus_hucs.gpkg` | Watershed polygons used for landscape stratification ([Chapter 2](focus_areas.qmd)) |
+
+The NetMap layer must include at minimum:
+
+-   `GRADIENT`: numeric channel gradient (unitless proportion; e.g., 0.05 = 5%)
+-   `OUT_DIST`: distance to river mouth in km, used to determine upstream/downstream position
+
+```{r}
+#| label: load-data
+#| output: false
+
+# Draft NetMap stream network
+streams  <- st_read("data/input/netmap/netmap_draft.gpkg")
+
+# AWC fish observation points, pre-snapped to stream lines in ArcGIS Pro
+fish_pts <- st_read("data/input/netmap/awc_snapped.gpkg")
+
+# HUC boundaries for landscape stratification
+hucs     <- st_read("data/input/focus_hucs/focus_hucs.gpkg")
+
+# Align CRS — all subsequent operations use the streams CRS as the reference
+if (st_crs(fish_pts) != st_crs(streams)) {
+  fish_pts <- st_transform(fish_pts, st_crs(streams))
+}
+if (st_crs(hucs) != st_crs(streams)) {
+  hucs <- st_transform(hucs, st_crs(streams))
+}
+```
+
+## Network Classification {#sec-classify}
+
+Reaches are labeled `"Present"` if they fall at or downstream of a documented fish observation, or `"Unknown"` if they lie above all documented observations. Only `"Unknown"` reaches are sampled in subsequent steps.
+
+Because the fish points have been snapped to the NetMap lines, each point sits on exactly one reach. Any reach with an `OUT_DIST` value greater than the highest `OUT_DIST` among fish-bearing reaches is labeled `"Unknown"`: it lies further from the river mouth and therefore above all confirmed fish observations.
+
+#### ArcGIS Pro equivalent
+
+1.  Open **Select By Location** (Map tab → Selection group).
+2.  **Input Features:** stream network layer. **Relationship:** Intersect. **Selecting Features:** AWC fish observation points.
+3.  Open the **Attribute Table** for the stream layer. With the fish-bearing reaches selected, open **Calculate Field**, set the field to `fishstatus`, and enter the expression `"Present"`.
+4.  Click **Switch Selection** at the top of the attribute table to invert the selection.
+5.  Run **Calculate Field** again on `fishstatus` with the expression `"Unknown"`.
+6.  Click **Clear Selection**.
+
+::: callout-note
+#### Classification and branching networks
+
+The `OUT_DIST` approach correctly identifies the most-upstream fish observation across the entire network, but labels all reaches above that threshold as `"Unknown"` regardless of which tributary they are on. In a branching network, reaches on tributaries that have never been surveyed are labeled `"Unknown"`, which is the right call for field planning. Reaches on a different branch than the most-upstream observation may be labeled `"Present"` when they are arguably untested; the ArcGIS Pro Trace Network approach described in [Chapter 4](fish_status.qmd) handles this more rigorously.
+:::
+
+```{r}
+#| label: classify-reaches
+#| output: false
+
+# Find which reaches contain at least one snapped fish observation
+fish_reach_ids <- st_intersects(streams, fish_pts) |>
+  lengths() > 0
+
+# The OUT_DIST of the most-upstream fish-bearing reach sets the classification threshold
+fish_outdist_threshold <- streams |>
+  filter(fish_reach_ids) |>
+  pull(OUT_DIST) |>
+  max(na.rm = TRUE)
+
+# Classify all reaches relative to that threshold
+streams_classified <- streams |>
+  mutate(
+    fishstatus = if_else(OUT_DIST > fish_outdist_threshold, "Unknown", "Present")
+  )
+```
+
+## Filter to Accessible Unknown Reaches {#sec-filter}
+
+Two filters reduce the classified network to accessible candidates:
+
+1.  **Fish status**: keep only reaches labeled `"Unknown"`.
+2.  **Gradient**: remove reaches at or above `GRADIENT_MAX` (default 20%), treating steep cascade segments as passage barriers.
+
+#### ArcGIS Pro equivalent
+
+1.  Open **Select By Attribute** (Map tab → Selection group).
+2.  Build the expression: `fishstatus = 'Unknown' AND GRADIENT < 0.20`.
+3.  Use **Export Features** (right-click layer → Data → Export Features) to save this subset as a new layer, or continue with the selection active.
+
+::: callout-note
+#### Gradient barriers and upstream topology
+
+Filtering by `GRADIENT < GRADIENT_MAX` removes individual steep segments but does **not** remove flat reaches that lie upstream of a steep barrier. If a 25% gradient cascade separates a flat headwater reach from the rest of the accessible network, the attribute filter retains that headwater reach even though anadromous fish cannot reach it.
+
+The topologically correct approach is to identify all barrier segments (`GRADIENT >= GRADIENT_MAX`), trace the network upstream from each barrier, and remove the entire inaccessible drainage. In ArcGIS Pro this is done with **Select By Attribute → Upstream Trace → Delete**. If that level of precision is needed, run that step in ArcGIS before exporting `data/input/netmap/netmap_draft.gpkg`. For the current implementation, the simple attribute filter is used as a practical approximation.
+:::
+
+```{r}
+#| label: filter-accessible
+#| output: false
+
+streams_unknown <- streams_classified |>
+  filter(fishstatus == "Unknown", GRADIENT < GRADIENT_MAX)
+```
+
+## Extract Launch Points {#sec-launch}
+
+Each candidate reach is represented by a single **launch point** at its downstream end, where crews begin walking upstream. The NetMap network is digitized from mouth to source, so the start vertex of each feature (parameterization position 0) is the downstream end, consistent with `OUT_DIST` values being lower at the start of each line.
+
+#### ArcGIS Pro equivalent
+
+1.  With the accessible unknown reaches selected (or as a standalone layer), open the **Feature Vertices To Points** tool (Data Management Tools → Features).
+2.  **Input Features:** the filtered stream layer. **Point Type:** `START`.
+3.  Each reach produces one point at its downstream vertex. The output inherits all attributes from the parent line.
+
+::: callout-note
+#### Verifying digitization direction
+
+Before running this step, confirm that `OUT_DIST` values are lower at the start vertex than at the end vertex for a sample of reaches. If NetMap data for a different region are digitized in the opposite direction (source to mouth), use `sample = 1` instead of `sample = 0` to extract the correct downstream end.
+:::
+
+```{r}
+#| label: extract-launch-points
+#| output: false
+
+launch_points <- streams_unknown |>
+  mutate(geometry = st_line_sample(geometry, sample = 0)) |>
+  # Drop any reaches for which a vertex could not be extracted
+  filter(!st_is_empty(geometry))
+```
+
+## Landscape Stratification {#sec-stratify}
+
+Each launch point is assigned to the watershed unit (HUC) it falls within. The HUC name is the stratification variable used in the quota calculation below. Points outside all HUC polygons are dropped; these are typically edge-of-study-area reaches whose downstream vertex falls just outside the boundary.
+
+#### ArcGIS Pro equivalent
+
+1.  Open the **Spatial Join** tool (Analysis Tools → Overlay).
+2.  **Target Features:** the launch points layer. **Join Features:** the HUC boundary polygons.
+3.  **Join Operation:** One to One. **Match Option:** Within (or Intersect if some points fall on polygon boundaries).
+4.  The output contains all HUC polygon attributes (including the stratification field, e.g., `huc_name`) joined to each launch point.
+5.  Use **Select By Attribute** to remove any records where the stratification field is null (points that fell outside all polygons).
+
+```{r}
+#| label: stratify
+#| output: false
+
+points_stratified <- st_join(launch_points, hucs, join = st_within) |>
+  filter(!is.na(.data[[STRATIFY_BY]]))
+```
+
+## Stratified Proportional Sample {#sec-sample}
+
+### Quota calculation
+
+Site allocations are proportional to each stratum's share of the total candidate pool. Rounding to whole numbers can cause the quotas to sum to one more or less than `TARGET_N`; the stratum with the largest rounding remainder absorbs that adjustment.
+
+#### ArcGIS Pro equivalent for quota calculation
+
+1.  Right-click the stratification field column in the attribute table and select **Summarize** to count the available points per stratum.
+2.  In a spreadsheet, divide each stratum count by the total to get proportions, multiply each by `TARGET_N`, and round to the nearest whole number. Apply a remainder correction if the sum does not equal `TARGET_N`.
+
+```{r}
+#| label: quota-calc
+#| output: false
+
+strata_summary <- points_stratified |>
+  st_drop_geometry() |>
+  count(.data[[STRATIFY_BY]]) |>
+  mutate(
+    prop      = n / sum(n),
+    quota_raw = prop * TARGET_N,
+    quota     = round(quota_raw)
+  )
+
+# Rounding correction: adjust the stratum with the largest rounding remainder
+# so that quotas sum to exactly TARGET_N
+discrepancy <- TARGET_N - sum(strata_summary$quota)
+if (discrepancy != 0) {
+  strata_summary <- strata_summary |>
+    mutate(remainder = abs(quota_raw - quota)) |>
+    arrange(desc(remainder))
+  strata_summary$quota[1] <- strata_summary$quota[1] + discrepancy
+}
+```
+
+### Sampling
+
+Sites are drawn independently within each stratum using `slice_sample()`.
+
+#### ArcGIS Pro equivalent for sampling
+
+No single ArcGIS Pro tool performs stratified proportional random sampling directly. The closest workflow is:
+
+1.  For each stratum, use **Select By Attribute** to isolate that stratum's points.
+2.  Use the **Subset Features** tool (or a Python script with a random sort) to select the quota number of points from that stratum.
+3.  Export each stratum's selection to a temporary layer, then use **Merge** (Data Management Tools → General) to combine all subsets into one output layer.
+
+The R script handles all strata in a single pipeline.
+
+```{r}
+#| label: sample-sites
+#| output: false
+
+set.seed(SET_SEED)
+
+field_sites <- points_stratified |>
+  group_by(.data[[STRATIFY_BY]]) |>
+  nest() |>
+  left_join(
+    strata_summary |> select(all_of(STRATIFY_BY), quota),
+    by = STRATIFY_BY
+  ) |>
+  mutate(sampled = map2(data, quota, \(d, q) slice_sample(d, n = q))) |>
+  unnest(sampled) |>
+  ungroup() |>
+  st_as_sf()
+```
+
+## Output {#sec-output}
+
+The final point layer is exported as a GeoPackage.
+
+#### ArcGIS Pro equivalent
+
+Right-click the final point layer in the Contents pane → **Data** → **Export Features**. Set the output location to `data/output/field_sites/` and the format to GeoPackage.
+
+```{r}
+#| label: export
+#| output: false
+
+st_write(
+  field_sites,
+  "data/output/field_sites/stratified_survey_sites.gpkg",
+  delete_layer = TRUE
+)
+```
+
+### Site allocation summary
+
+```{r}
+#| label: quota-table
+
+strata_summary |>
+  select(
+    Stratum             = all_of(STRATIFY_BY),
+    `Available reaches` = n,
+    Proportion          = prop,
+    `Sites allocated`   = quota
+  ) |>
+  mutate(Proportion = scales::percent(Proportion, accuracy = 0.1)) |>
+  knitr::kable(
+    caption = "Stratified site allocation by watershed unit.",
+    align   = c("l", "r", "r", "r")
+  )
+```
+
+### Map
+
+```{r}
+#| label: map-field-sites
+
+library(leaflet)
+library(RColorBrewer)
+
+# Reproject to WGS84 for leaflet
+field_sites_wgs <- st_transform(field_sites, 4326)
+hucs_wgs        <- st_transform(hucs, 4326)
+
+# Color palette keyed to strata
+strata_levels <- unique(field_sites_wgs[[STRATIFY_BY]])
+pal <- colorFactor(
+  palette = brewer.pal(min(length(strata_levels), 8), "Dark2"),
+  domain  = strata_levels
+)
+
+leaflet() |>
+  addProviderTiles("Esri.WorldTopoMap") |>
+  addPolygons(
+    data        = hucs_wgs,
+    weight      = 1.5,
+    color       = "#555",
+    fillOpacity = 0.05,
+    label       = ~hucs_wgs[[STRATIFY_BY]]
+  ) |>
+  addCircleMarkers(
+    data        = field_sites_wgs,
+    radius      = 5,
+    color       = ~pal(.data[[STRATIFY_BY]]),
+    stroke      = FALSE,
+    fillOpacity = 0.85,
+    label       = ~paste0(.data[[STRATIFY_BY]], " | OUT_DIST: ",
+                          round(OUT_DIST, 1), " km")
+  ) |>
+  addLegend(
+    pal    = pal,
+    values = field_sites_wgs[[STRATIFY_BY]],
+    title  = "Watershed stratum"
+  )
+```

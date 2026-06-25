@@ -102,11 +102,11 @@
   {
     "objectID": "summary.html",
     "href": "summary.html",
-    "title": "5  Summary",
+    "title": "6  Summary",
     "section": "",
     "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Summary</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Summary</span>"
     ]
   },
   {
@@ -137,6 +137,96 @@
     "text": "This chapter addresses the known statuses of fish presence / absence for channel segments within the project areas.\nPlan:\n\nCreate full point layer of all known most-upstream anadromous fish observations\n\nUse results from chapter in this document, “Existing Fish Observations within the Kenai Borough”\nCreate new additional points at most-upstream terminal ends of 2025 Anadromous Waters Catalog\nCombine the two above data sources into a single layer\n\nSnap all anadomous fish observation points to nearest NetMap channel reach\nUse Trace Network tools to assign most-upstream status to snapped points.\nAssign status to channel all channel segments above and below each most-upstream point\n\nStatus options: Fish Present, Fish Absent, or Unknown",
     "crumbs": [
       "<span class='chapter-number'>4</span>  <span class='chapter-title'>Knowledge Status of Fish Presence/Absence</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html",
+    "href": "field_site_selection.html",
+    "title": "5  Field Site Selection",
+    "section": "",
+    "text": "5.1 Overview\nThis chapter documents a stratified proportional random sampling design to select candidate field survey sites within stream reaches whose anadromous fish status is currently unknown. These survey sites support the Last Fish Observed (LFO) field method: crews begin at each launch point and walk upstream until fish are no longer detected. The resulting presence-absence data provide a calibration dataset for models predicting the upper extent of anadromous fish occupancy in the Kenai Peninsula Borough.\nThis chapter depends on the output of Chapter 4: Knowledge Status of Fish Presence/Absence, where the NetMap stream network was attributed with a fishstatus field using ArcGIS Pro Trace Network tools. Reaches are classified as:\nOnly \"Unknown\" reaches are candidate survey locations for this chapter.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#overview",
+    "href": "field_site_selection.html#overview",
+    "title": "5  Field Site Selection",
+    "section": "",
+    "text": "\"Present\" — at or below the most-upstream documented fish observation\n\"Unknown\" — above those observations, with no confirmed fish presence or absence\n\n\n\n5.1.1 Design Rationale\nSimple random sampling of stream reaches biases site selection toward low-elevation, high-density valley networks — reaches that are already well-sampled. A stratified proportional random sampling scheme corrects for this by dividing the candidate pool into landscape strata (here, by watershed unit) and allocating survey sites in proportion to each stratum’s share of the total pool. The result is a sample that is statistically sound and representative across the environmental and elevational gradient of the study area.\n\n\n5.1.2 Workflow",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-config",
+    "href": "field_site_selection.html#sec-config",
+    "title": "5  Field Site Selection",
+    "section": "5.2 Configuration",
+    "text": "5.2 Configuration\nAll user-adjustable parameters are collected here. No code below this block requires manual editing when adapting this script to a new sampling year or adjusted criteria.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-data",
+    "href": "field_site_selection.html#sec-data",
+    "title": "5  Field Site Selection",
+    "section": "5.3 Data",
+    "text": "5.3 Data\n\n5.3.1 Input files\nThis chapter requires two spatial datasets, both stored in data/input/:\n\n\n\nDataset\nPath\nSource\n\n\n\n\nClassified NetMap reaches\ndata/input/netmap/netmap_classified.gpkg\nArcGIS output from Chapter 4\n\n\nFocus HUC boundaries\ndata/input/focus_hucs/focus_hucs.gpkg\nProject focus area layer (Chapter 2)\n\n\n\nThe classified NetMap layer must include at minimum:\n\nfishstatus — character field with values \"Present\" or \"Unknown\"\nGRADIENT — numeric channel gradient (unitless proportion)\nOUT_DIST — distance to river mouth (km); used to verify digitization direction\n\n\n# Classified stream network (output from fish_status.qmd ArcGIS workflow)\nstreams &lt;- st_read(\"data/input/netmap/netmap_classified.gpkg\")\n\n# Focus HUC boundaries for stratification\nhucs &lt;- st_read(\"data/input/focus_hucs/focus_hucs.gpkg\")\n\n# Align coordinate reference systems before any spatial operations\nif (st_crs(streams) != st_crs(hucs)) {\n  hucs &lt;- st_transform(hucs, st_crs(streams))\n}",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-filter",
+    "href": "field_site_selection.html#sec-filter",
+    "title": "5  Field Site Selection",
+    "section": "5.4 Filter to Accessible Unknown Reaches",
+    "text": "5.4 Filter to Accessible Unknown Reaches\nStarting from the full classified network, two filters are applied in sequence:\n\nFish status filter: keep only reaches labeled \"Unknown\".\nGradient barrier filter: remove reaches at or above GRADIENT_MAX, which are assumed to be above natural passage barriers.\n\n\nstreams_unknown &lt;- streams |&gt;\n  filter(fishstatus == \"Unknown\", GRADIENT &lt; GRADIENT_MAX)\n\n\n\n\n\n\n\nNoteGradient barriers and upstream topology\n\n\n\nFiltering by GRADIENT &lt; GRADIENT_MAX removes individual steep segments but does not remove flat reaches that lie upstream of a steep barrier. For example, if a 25% gradient cascade separates a flat headwater reach from the rest of the accessible network, the simple attribute filter retains that headwater reach even though it is physically unreachable by anadromous fish.\nThe topologically correct approach is to identify all barrier segments (where GRADIENT &gt;= GRADIENT_MAX), trace the network upstream from each barrier, and remove the entire inaccessible drainage — equivalent to “Select by Attribute → Upstream Trace → Delete” in ArcGIS Pro. If this level of precision is required, this step should be added to the ArcGIS workflow in Chapter 4, and the exported netmap_classified.gpkg should contain only accessible reaches before arriving at this chapter.\nFor the current implementation, the simple gradient filter is used as a practical approximation.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-launch",
+    "href": "field_site_selection.html#sec-launch",
+    "title": "5  Field Site Selection",
+    "section": "5.5 Extract Launch Points",
+    "text": "5.5 Extract Launch Points\nEach candidate survey reach is reduced to a single launch point — the downstream end of the reach, where field crews will begin walking upstream. The NetMap stream network is digitized from mouth to source (the start vertex of each feature is the downstream end), which is consistent with the OUT_DIST attribute: lower OUT_DIST values occur at the start vertex.\nst_line_sample() with sample = 0 extracts the start (downstream) vertex of each line geometry.\n\n\n\n\n\n\nNoteVerifying digitization direction\n\n\n\nBefore running this step, confirm that OUT_DIST values are lower at the start vertex than at the end vertex for a sample of reaches. If NetMap data for a different region are digitized in the opposite direction (source to mouth), use sample = 1 instead of sample = 0 to extract the downstream end.\n\n\n\nlaunch_points &lt;- streams_unknown |&gt;\n  mutate(geometry = st_line_sample(geometry, sample = 0)) |&gt;\n  # Drop any reaches for which a start point could not be extracted\n  filter(!st_is_empty(geometry))",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-stratify",
+    "href": "field_site_selection.html#sec-stratify",
+    "title": "5  Field Site Selection",
+    "section": "5.6 Landscape Stratification",
+    "text": "5.6 Landscape Stratification\nEach launch point is assigned to the watershed unit (HUC) it falls within via spatial join. Points that fall outside all HUC polygons are dropped; these typically represent reaches at the edge of the study area that slightly cross the boundary.\n\npoints_stratified &lt;- st_join(launch_points, hucs, join = st_within) |&gt;\n  filter(!is.na(.data[[STRATIFY_BY]]))",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-sample",
+    "href": "field_site_selection.html#sec-sample",
+    "title": "5  Field Site Selection",
+    "section": "5.7 Stratified Proportional Sample",
+    "text": "5.7 Stratified Proportional Sample\n\n5.7.1 Quota calculation\nEach stratum receives a site quota proportional to its share of the total candidate pool. Quotas are rounded to whole numbers; a correction step adjusts the stratum with the largest rounding remainder to ensure quotas sum to exactly TARGET_N.\n\nstrata_summary &lt;- points_stratified |&gt;\n  st_drop_geometry() |&gt;\n  count(.data[[STRATIFY_BY]]) |&gt;\n  mutate(\n    prop      = n / sum(n),\n    quota_raw = prop * TARGET_N,\n    quota     = round(quota_raw)\n  )\n\n# Rounding correction\ndiscrepancy &lt;- TARGET_N - sum(strata_summary$quota)\nif (discrepancy != 0) {\n  strata_summary &lt;- strata_summary |&gt;\n    mutate(remainder = abs(quota_raw - quota)) |&gt;\n    arrange(desc(remainder))\n  strata_summary$quota[1] &lt;- strata_summary$quota[1] + discrepancy\n}\n\n\n\n5.7.2 Sampling\nSites are drawn independently within each stratum using slice_sample().\n\nset.seed(SET_SEED)\n\nfield_sites &lt;- points_stratified |&gt;\n  group_by(.data[[STRATIFY_BY]]) |&gt;\n  nest() |&gt;\n  left_join(\n    strata_summary |&gt; select(all_of(STRATIFY_BY), quota),\n    by = STRATIFY_BY\n  ) |&gt;\n  mutate(sampled = map2(data, quota, \\(d, q) slice_sample(d, n = q))) |&gt;\n  unnest(sampled) |&gt;\n  ungroup() |&gt;\n  st_as_sf()",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-output",
+    "href": "field_site_selection.html#sec-output",
+    "title": "5  Field Site Selection",
+    "section": "5.8 Output",
+    "text": "5.8 Output\n\nst_write(\n  field_sites,\n  \"data/output/field_sites/stratified_survey_sites.gpkg\",\n  delete_layer = TRUE\n)\n\n\n5.8.1 Site allocation summary\n\nstrata_summary |&gt;\n  select(\n    Stratum              = all_of(STRATIFY_BY),\n    `Available reaches`  = n,\n    Proportion           = prop,\n    `Sites allocated`    = quota\n  ) |&gt;\n  mutate(Proportion = scales::percent(Proportion, accuracy = 0.1)) |&gt;\n  knitr::kable(\n    caption = \"Stratified site allocation by watershed unit.\",\n    align   = c(\"l\", \"r\", \"r\", \"r\")\n  )\n\n\n\n5.8.2 Map\n\nlibrary(leaflet)\nlibrary(RColorBrewer)\n\n# Reproject to WGS84 for leaflet\nfield_sites_wgs &lt;- st_transform(field_sites, 4326)\nhucs_wgs        &lt;- st_transform(hucs, 4326)\n\n# Color palette by stratum\nstrata_levels &lt;- unique(field_sites_wgs[[STRATIFY_BY]])\npal &lt;- colorFactor(\n  palette = brewer.pal(min(length(strata_levels), 8), \"Dark2\"),\n  domain  = strata_levels\n)\n\nleaflet() |&gt;\n  addProviderTiles(\"Esri.WorldTopoMap\") |&gt;\n  addPolygons(\n    data        = hucs_wgs,\n    weight      = 1.5,\n    color       = \"#555\",\n    fillOpacity = 0.05,\n    label       = ~hucs_wgs[[STRATIFY_BY]]\n  ) |&gt;\n  addCircleMarkers(\n    data        = field_sites_wgs,\n    radius      = 5,\n    color       = ~pal(.data[[STRATIFY_BY]]),\n    stroke      = FALSE,\n    fillOpacity = 0.85,\n    label       = ~paste0(.data[[STRATIFY_BY]], \" | OUT_DIST: \",\n                          round(OUT_DIST, 1), \" km\")\n  ) |&gt;\n  addLegend(\n    pal    = pal,\n    values = field_sites_wgs[[STRATIFY_BY]],\n    title  = \"Watershed stratum\"\n  )",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
     ]
   }
 ]

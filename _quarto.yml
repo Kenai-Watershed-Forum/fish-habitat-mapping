@@ -13,6 +13,7 @@ book:
     - focus_areas.qmd
     - existing_fish_obs.qmd
     - fish_status.qmd
+    - field_site_selection.qmd
     - summary.qmd
     - references.qmd
 
