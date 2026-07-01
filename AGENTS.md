@@ -1,6 +1,6 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-06-24 (added field_site_selection.qmd; reorganized data/input/ folder structure; added writing style standards)
+Last updated: 2026-07-01 (added YK_IP Software Release section)
 
 Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
@@ -271,6 +271,47 @@ Each pipeline step documents both the R implementation and the equivalent ArcGIS
 
 - The `OUT_DIST` classification approach is a simplification; on branching networks it may over-assign `"Present"` to untested tributaries. The ArcGIS Trace Network approach (Chapter 4) provides the topologically rigorous alternative.
 - Gradient barrier filter removes individual steep segments only — flat reaches above a cascade are retained. Upstream pruning from barriers should be done in ArcGIS before exporting the input NetMap layer if topological accuracy is required.
+
+------------------------------------------------------------------------
+
+## YK_IP Software Release
+
+### Location
+
+`other/documents/YK_IP_Software_Release/` — downloaded from https://code.usgs.gov/cooperativeresearchunits/alaska/salmon-freshwater-habitat. Developed by the Alaska Cooperative Fish & Wildlife Research Unit (USFWS Research Work Order 230) for Chinook habitat analysis in Yukon-Kuskokwim river basins.
+
+### What it is
+
+Seven Jupyter notebook files (`.ipynb`) containing ArcPy code designed to run inside ArcGIS Pro. All notebooks require `arcpy` (Esri's Python library) and a valid ArcGIS Pro license. Notebooks IP 4–7 also require the **Spatial Analyst** extension. The notebooks cannot be run outside of ArcGIS Pro.
+
+### Pipeline summary
+
+| Notebook | Output | Purpose |
+|----|----|----|
+| IP 1 | HUC8 polygon subset | Clip NHD HUC8 polygons to NetMap extent |
+| IP 2 | Pruned + clipped NetMap reaches | Keep reaches ≥ 5 km² catchment; clip to HUC8 |
+| IP 3 | IFSAR DEM mosaic | Merge IFSAR DEM tiles by HUC8 extent |
+| IP 4 | RCA polygons | Build Reach Contributing Areas (RCAs) from stream network + DEM via cost allocation |
+| IP 5 | Valley bottom polygons | Resample IFSAR; delineate valley bottoms |
+| IP 6 | RCA-clipped valley bottoms | Clip valley bottoms to RCA boundaries and clean |
+| IP 7 | Valley bottom width table | Tabulate valley bottom width per reach |
+
+### Relevance to this project
+
+The end products — RCAs and per-reach valley bottom width — are key landscape habitat attributes used in salmon End-of-Anadromy (EoA) and End-of-Fish (EoF) spatial models, which are the eventual modeling goal of `fish_status.qmd`. The Kenai project already uses NetMap stream networks (same input format). IFSAR DEM is available for the Kenai Peninsula from the same source (USGS National Map). The scripts are geographically adaptable — all file paths and GDB names are user-supplied at the top of each notebook.
+
+### Planned approach
+
+1.  **Understand the pipeline** — read through each notebook to understand inputs, outputs, and logic in plain language before touching any code.
+2.  **Assess prerequisites** — confirm: (a) Kenai IFSAR DEM is downloaded, (b) NetMap data is in a `.gdb` format compatible with ArcPy (not only `.gpkg`), (c) Spatial Analyst is licensed in ArcGIS Pro.
+3.  **Python orientation** — user is currently Python-illiterate; IP 1 and IP 2 are the simplest notebooks and are good starting points for reading ArcPy code.
+4.  **Adapt for Kenai** — modify user-input cells (file paths, GDB names, field names) and run notebook by notebook, checking outputs in ArcGIS Pro at each step.
+
+### Key data notes
+
+- Input NetMap data for the YK project used `.gdb` format; the Kenai project currently stores NetMap in `.gpkg`. ArcPy can read `.gpkg` files, but the scripts assume `.gdb` workspace environments — this will need to be reconciled.
+- IFSAR DEM source: https://apps.nationalmap.gov/downloader/ (5m DSM tiles; see IP 4 for details).
+- Outputs from this pipeline would likely be stored in `data/input/netmap/` once produced, as reach-level habitat attributes to join to the NetMap network.
 
 ------------------------------------------------------------------------
 

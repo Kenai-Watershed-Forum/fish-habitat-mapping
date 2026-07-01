@@ -11,7 +11,7 @@ QUARTO NOTES I want this project to be able to be rendered as both .html (hosted
 
 NOTE ON AGENTIC COLLABORATION STANDARDS I will use agentic coding assistance to develop and complete this project. However, I do not want to create and implement code without first understanding how it works. The ability for future scientists to be able to read, edit, and apply the code in this project is important, as it is a long-term monitoring project. Therefore, the agent will proceed with implementing code edits only after confirming with the user that they understand what is happening.
 
-5/12/2026 
+5/12/2026
 
 I have placed new excel sheets in data/input/kwf.I need to do two things with these data sources, described below:
 
@@ -19,6 +19,10 @@ a)  integrate 2021_2024_fish_survey_data.xlsx and 2025_fish_survey_data.xlsx int
 
 b)  I need a seperate download that includes just the combined KWF data from 2021-2024 and 2025. All in one single dataframe, in a consistent format. I recommend integrating this request in to the above request and providing this as an intermediate download en route to integrating KWF data with the other data sources.
 
-6/24/2026 
+6/24/2026
 
 I have been using google gemini to develop a complex script that will aid in selecting fieldwork points for this project. The conversation is at https://gemini.google.com/share/d/1lWGWjKAzxFRcan execute the tasks we developed, I hope you can access this full conversation - if not i will copy and paste it to make it accessible to poist assistant. Gemini appears to be unable to provide me with this qmd download i have requested at the end. I would like posit assistant to help create this requested script and put its contents in chapter 4 of the quarto book in this project.
+
+7/1/2026
+
+I have placed a folder at other/documents/YK_IP_Software_Release. It contains contents downloaded from <https://code.usgs.gov/cooperativeresearchunits/alaska/salmon-freshwater-habitat>. I want to examine and understand this codebase and see if it has utility for the project being executed here in this project (fish-habitat-mapping). I am Python illiterate currently, but want to learn.

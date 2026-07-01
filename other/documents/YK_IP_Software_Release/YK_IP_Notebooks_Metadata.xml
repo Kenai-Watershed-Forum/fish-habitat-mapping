@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>
+  <idinfo>
+    <citation>
+      <citeinfo>
+        <origin>Jeff Falke</origin>
+        <origin>Josh Paul</origin>
+        <pubdate>20230501</pubdate>
+        <title>Python Notebooks Used to Create HUC8-Level Synthetic Stream Network Reach Contributing Areas and Valley Bottoms in the Yukon and Kuskokwim River Basins, Alaska</title>
+        <geoform>application/service</geoform>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>These notebooks and scripts process synthetic stream networks and DEMs to create unique reach contributing areas (uRCAs) and uRCA valley bottoms (uRCA VBs). The Python notebooks are designed to be run within ESRI ArcPro software and utilize the 'arcpy' module. The data were processed by region and in sections based on National Hydrography Dataset (NHD) Level 8 hydrologic units (HUC8) to reduce the computing workload, and therefore the scripts make use of a naming convention based on HUC8 codes within each regional geodatabase.</abstract>
+      <purpose>These notebooks and scripts were created to support the US Fish and Wildlife Service (USFWS) Research Work Order (RWO) 230: "Freshwater Habitat Potential for Chinook Salmon in the Yukon and Kuskokwim River Basins, Alaska"</purpose>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <sngdate>
+          <caldate>20230501</caldate>
+        </sngdate>
+      </timeinfo>
+      <current>See Supplemental Info</current>
+    </timeperd>
+    <status>
+      <progress>Complete</progress>
+      <update>None planned</update>
+    </status>
+    <spdom>
+      <bounding>
+        <westbc>-165.0540</westbc>
+        <eastbc>-137.0555</eastbc>
+        <northbc>68.5477</northbc>
+        <southbc>58.4111</southbc>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>ISO 19115 Topic Category</themekt>
+        <themekey>environment</themekey>
+        <themekey>biota</themekey>
+        <themekey>elevation</themekey>
+        <themekey>inlandWaters</themekey>
+      </theme>
+      <theme>
+        <themekt>None</themekt>
+        <themekey>synthetic stream network</themekey>
+        <themekey>reach contributing area</themekey>
+      </theme>
+      <place>
+        <placekt>None</placekt>
+        <placekey>Alaska</placekey>
+        <placekey>Interior Alaska</placekey>
+        <placekey>Yukon River</placekey>
+        <placekey>Kuskokwim River</placekey>
+      </place>
+    </keywords>
+    <accconst>None.  Please see 'Distribution Info' for details.</accconst>
+    <useconst>None.  Users are advised to read the dataset's metadata thoroughly to understand appropriate use and data limitations.</useconst>
+    <ptcontac>
+      <cntinfo>
+        <cntperp>
+          <cntper>Jeff Falke</cntper>
+          <cntorg>Alaska Cooperative Fish and Wildlife Research Unit</cntorg>
+        </cntperp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>P.O. Box 757020</address>
+          <city>Fairbanks</city>
+          <state>Alaska</state>
+          <postal>99709</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>(907)474-6044</cntvoice>
+        <cntemail>jfalke@usgs.gov</cntemail>
+      </cntinfo>
+    </ptcontac>
+    <datacred>University of Alaska Fairbanks;  Alaska Department of Fish and Game; US Fish and Wildlife Service; US Geological Survey</datacred>
+    <native>ESRI ArcPro 2.7.0; Python 3.x (modules: arcpy, pandas, os, datetime, numpy); Jupyter Lab 3.3.2</native>
+  </idinfo>
+  <dataqual>
+    <attracc>
+      <attraccr>NA</attraccr>
+    </attracc>
+    <logic>NA</logic>
+    <complete>NA</complete>
+    <lineage>
+      <srcinfo>
+        <srccite>
+          <citeinfo>
+            <origin>Earth Resources Observation And Science (EROS) Center</origin>
+            <pubdate>2018</pubdate>
+            <title>Interferometric Synthetic Aperture Radar (IFSAR) Alaska</title>
+            <geoform>dataset</geoform>
+            <pubinfo>
+              <pubplace>https://www.sciencebase.gov</pubplace>
+              <publish>U.S. Geological Survey</publish>
+            </pubinfo>
+            <onlink>https://doi.org/10.5066/p9c064co</onlink>
+          </citeinfo>
+        </srccite>
+        <typesrc>Digital and/or Hardcopy</typesrc>
+        <srctime>
+          <timeinfo>
+            <sngdate>
+              <caldate>20180101</caldate>
+            </sngdate>
+          </timeinfo>
+          <srccurr>publication date</srccurr>
+        </srctime>
+        <srccitea>Elevation Data</srccitea>
+        <srccontr>Elevation Data</srccontr>
+      </srcinfo>
+      <srcinfo>
+        <srccite>
+          <citeinfo>
+            <origin>Lee Benda</origin>
+            <pubdate>2007</pubdate>
+            <title>NetMap: A New Tool in Support of Watershed Science and Resource Management</title>
+            <geoform>vector digital data</geoform>
+            <onlink>http://archive.terrainworks.com/docs/Benda2007NetMap.pdf</onlink>
+          </citeinfo>
+        </srccite>
+        <typesrc>Digital and/or Hardcopy</typesrc>
+        <srctime>
+          <timeinfo>
+            <sngdate>
+              <caldate>20070101</caldate>
+            </sngdate>
+          </timeinfo>
+          <srccurr>publication date</srccurr>
+        </srctime>
+        <srccitea>NetMap Synthetic Stream Lines and Stream Attributes</srccitea>
+        <srccontr>NetMap Synthetic Stream Lines and Stream Attributes</srccontr>
+      </srcinfo>
+      <procstep>
+        <procdesc>NA</procdesc>
+        <procdate>20230501</procdate>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <distinfo>
+    <distrib>
+      <cntinfo>
+        <cntperp>
+          <cntper>GS ScienceBase</cntper>
+          <cntorg>U.S. Geological Survey</cntorg>
+        </cntperp>
+        <cntaddr>
+          <addrtype>mailing address</addrtype>
+          <address>Denver Federal Center, Building 810, Mail Stop 302</address>
+          <city>Denver</city>
+          <state>CO</state>
+          <postal>80225</postal>
+          <country>United States</country>
+        </cntaddr>
+        <cntvoice>1-888-275-8747</cntvoice>
+        <cntemail>sciencebase@usgs.gov</cntemail>
+      </cntinfo>
+    </distrib>
+    <distliab>Unless otherwise stated, all data, metadata and related materials are considered to satisfy the quality standards relative to the purpose for which the data were collected. Although these data and associated metadata have been reviewed for accuracy and completeness and approved for release by the U.S. Geological Survey (USGS), no warranty expressed or implied is made regarding the display or utility of the data for other purposes, nor on all computer systems, nor shall the act of distribution constitute any such warranty.</distliab>
+    <stdorder>
+      <digform><digtinfo>
+          <formname>Digital Data</formname>
+        </digtinfo>
+        <digtopt><onlinopt><computer><networka><networkr>https://doi.org/10.5066/xxxxxxxx</networkr></networka></computer></onlinopt></digtopt></digform>
+      <fees>None</fees>
+    </stdorder>
+  </distinfo>
+  <metainfo>
+    <metd>20221207</metd>
+    <metc>
+      <cntinfo>
+        <cntperp>
+          <cntper>Josh Paul</cntper>
+          <cntorg>Alaska Cooperative Fish and Wildlife Research Unit</cntorg>
+        </cntperp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>216 Irving 1 Building</address>
+          <city>Fairbanks</city>
+          <state>Alaska</state>
+          <postal>99709</postal>
+        </cntaddr>
+        <cntvoice>(907)474-6044</cntvoice>
+      </cntinfo>
+    </metc>
+    <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+    <metstdv>FGDC-STD-001-1998</metstdv>
+  </metainfo>
+</metadata>
