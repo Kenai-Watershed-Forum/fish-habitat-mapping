@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Kenai Watershed Forum">
-<meta name="dcterms.date" content="2026-06-24">
+<meta name="dcterms.date" content="2026-07-14">
 
 <title>5&nbsp; Field Site Selection – fish-habitat-mapping</title>
 <style>
@@ -78,7 +78,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-9e3e5b9121e68b3f077afb32f2c64d95.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -209,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">5.1</span> Overview</a>
   <ul class="collapse">
-  <li><a href="#design-rationale" id="toc-design-rationale" class="nav-link" data-scroll-target="#design-rationale"><span class="header-section-number">5.1.1</span> Design Rationale</a></li>
+  <li><a href="#design-rationale" id="toc-design-rationale" class="nav-link" data-scroll-target="#design-rationale"><span class="header-section-number">5.1.1</span> Design rationale</a></li>
   <li><a href="#workflow" id="toc-workflow" class="nav-link" data-scroll-target="#workflow"><span class="header-section-number">5.1.2</span> Workflow</a></li>
   </ul></li>
   <li><a href="#sec-config" id="toc-sec-config" class="nav-link" data-scroll-target="#sec-config"><span class="header-section-number">5.2</span> Configuration</a></li>
@@ -217,18 +217,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#input-files" id="toc-input-files" class="nav-link" data-scroll-target="#input-files"><span class="header-section-number">5.3.1</span> Input files</a></li>
   </ul></li>
-  <li><a href="#sec-filter" id="toc-sec-filter" class="nav-link" data-scroll-target="#sec-filter"><span class="header-section-number">5.4</span> Filter to Accessible Unknown Reaches</a></li>
-  <li><a href="#sec-launch" id="toc-sec-launch" class="nav-link" data-scroll-target="#sec-launch"><span class="header-section-number">5.5</span> Extract Launch Points</a></li>
-  <li><a href="#sec-stratify" id="toc-sec-stratify" class="nav-link" data-scroll-target="#sec-stratify"><span class="header-section-number">5.6</span> Landscape Stratification</a></li>
-  <li><a href="#sec-sample" id="toc-sec-sample" class="nav-link" data-scroll-target="#sec-sample"><span class="header-section-number">5.7</span> Stratified Proportional Sample</a>
+  <li><a href="#sec-classify" id="toc-sec-classify" class="nav-link" data-scroll-target="#sec-classify"><span class="header-section-number">5.4</span> Network Classification</a></li>
+  <li><a href="#sec-filter" id="toc-sec-filter" class="nav-link" data-scroll-target="#sec-filter"><span class="header-section-number">5.5</span> Filter to Accessible Unknown Reaches</a></li>
+  <li><a href="#sec-launch" id="toc-sec-launch" class="nav-link" data-scroll-target="#sec-launch"><span class="header-section-number">5.6</span> Extract Launch Points</a></li>
+  <li><a href="#sec-stratify" id="toc-sec-stratify" class="nav-link" data-scroll-target="#sec-stratify"><span class="header-section-number">5.7</span> Landscape Stratification</a></li>
+  <li><a href="#sec-sample" id="toc-sec-sample" class="nav-link" data-scroll-target="#sec-sample"><span class="header-section-number">5.8</span> Stratified Proportional Sample</a>
   <ul class="collapse">
-  <li><a href="#quota-calculation" id="toc-quota-calculation" class="nav-link" data-scroll-target="#quota-calculation"><span class="header-section-number">5.7.1</span> Quota calculation</a></li>
-  <li><a href="#sampling" id="toc-sampling" class="nav-link" data-scroll-target="#sampling"><span class="header-section-number">5.7.2</span> Sampling</a></li>
+  <li><a href="#quota-calculation" id="toc-quota-calculation" class="nav-link" data-scroll-target="#quota-calculation"><span class="header-section-number">5.8.1</span> Quota calculation</a></li>
+  <li><a href="#sampling" id="toc-sampling" class="nav-link" data-scroll-target="#sampling"><span class="header-section-number">5.8.2</span> Sampling</a></li>
   </ul></li>
-  <li><a href="#sec-output" id="toc-sec-output" class="nav-link" data-scroll-target="#sec-output"><span class="header-section-number">5.8</span> Output</a>
+  <li><a href="#sec-output" id="toc-sec-output" class="nav-link" data-scroll-target="#sec-output"><span class="header-section-number">5.9</span> Output</a>
   <ul class="collapse">
-  <li><a href="#site-allocation-summary" id="toc-site-allocation-summary" class="nav-link" data-scroll-target="#site-allocation-summary"><span class="header-section-number">5.8.1</span> Site allocation summary</a></li>
-  <li><a href="#map" id="toc-map" class="nav-link" data-scroll-target="#map"><span class="header-section-number">5.8.2</span> Map</a></li>
+  <li><a href="#site-allocation-summary" id="toc-site-allocation-summary" class="nav-link" data-scroll-target="#site-allocation-summary"><span class="header-section-number">5.9.1</span> Site allocation summary</a></li>
+  <li><a href="#map" id="toc-map" class="nav-link" data-scroll-target="#map"><span class="header-section-number">5.9.2</span> Map</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -253,14 +254,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Kenai Watershed Forum <a href="mailto:ben.meyer@kenaiwatershed.org" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+             <p>Kenai Watershed Forum <a href="mailto:ben@kenaiwatershed.org" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
           </div>
   </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 24, 2026</p>
+      <p class="date">July 14, 2026</p>
     </div>
   </div>
   
@@ -282,21 +283,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>This chapter is a working draft. All code blocks are set to <code>eval: false</code> because the primary input — the NetMap stream network classified in ArcGIS Pro — is produced as part of the <a href="./fish_status.html">Chapter 4 (Knowledge Status of Fish Presence/Absence)</a> workflow and does not yet exist as a saved file. Once that ArcGIS processing is complete and the output is exported to <code>data/input/netmap/netmap_classified.gpkg</code>, set <code>eval: false</code> to <code>eval: true</code> in this chapter’s YAML to render live outputs.</p>
+<p>This chapter is a working draft. All code blocks are set to <code>eval: false</code> because the two input files have not yet been placed in <code>data/input/netmap/</code>:</p>
+<ul>
+<li><code>netmap_draft.gpkg</code>: the draft NetMap stream network for project focus HUCs</li>
+<li><code>awc_snapped.gpkg</code>: AWC fish observation points snapped to NetMap lines in ArcGIS Pro</li>
+</ul>
+<p>Once both files are in place, set <code>eval: false</code> to <code>eval: true</code> in this chapter’s YAML to render live outputs.</p>
 </div>
 </div>
 <section id="overview" class="level2" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="overview"><span class="header-section-number">5.1</span> Overview</h2>
-<p>This chapter documents a stratified proportional random sampling design to select candidate field survey sites within stream reaches whose anadromous fish status is currently <em>unknown</em>. These survey sites support the <strong>Last Fish Observed (LFO)</strong> field method: crews begin at each launch point and walk upstream until fish are no longer detected. The resulting presence-absence data provide a calibration dataset for models predicting the upper extent of anadromous fish occupancy in the Kenai Peninsula Borough.</p>
-<p>This chapter depends on the output of <a href="./fish_status.html">Chapter 4: Knowledge Status of Fish Presence/Absence</a>, where the NetMap stream network was attributed with a <code>fishstatus</code> field using ArcGIS Pro Trace Network tools. Reaches are classified as:</p>
-<ul>
-<li><code>"Present"</code> — at or below the most-upstream documented fish observation</li>
-<li><code>"Unknown"</code> — above those observations, with no confirmed fish presence or absence</li>
-</ul>
-<p>Only <code>"Unknown"</code> reaches are candidate survey locations for this chapter.</p>
+<p>Field crews conducting Last Fish Observed (LFO) surveys begin at a stream access point, walk upstream, and record the furthest point where fish are found. Selecting those access points is the purpose of this chapter. Sites are drawn from reaches where fish presence has not been documented, and the resulting survey data calibrate models of how far upstream anadromous fish reach in each watershed.</p>
+<p>Two GIS files prepared in ArcGIS Pro serve as inputs: the draft NetMap stream network and a layer of AWC fish observation points snapped to the NetMap lines. From these, the script classifies reaches by fish presence status, filters to accessible candidates, extracts launch points, assigns landscape strata, and draws a proportional random sample.</p>
+<p>Each step includes a description of the equivalent ArcGIS Pro workflow for reference.</p>
 <section id="design-rationale" class="level3" data-number="5.1.1">
-<h3 data-number="5.1.1" class="anchored" data-anchor-id="design-rationale"><span class="header-section-number">5.1.1</span> Design Rationale</h3>
-<p>Simple random sampling of stream reaches biases site selection toward low-elevation, high-density valley networks — reaches that are already well-sampled. A <strong>stratified proportional random sampling</strong> scheme corrects for this by dividing the candidate pool into landscape strata (here, by watershed unit) and allocating survey sites in proportion to each stratum’s share of the total pool. The result is a sample that is statistically sound and representative across the environmental and elevational gradient of the study area.</p>
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="design-rationale"><span class="header-section-number">5.1.1</span> Design rationale</h3>
+<p>Simple random sampling of stream reaches skews site selection toward low-elevation, high-density valley networks, which are already well-sampled. In a <strong>stratified proportional random sampling</strong> design, candidate reaches are divided into landscape strata by watershed unit, and sites are allocated in proportion to each stratum’s share of the total pool. The final sample covers the full elevational and geographic range of the study area without overrepresenting any single watershed type.</p>
 </section>
 <section id="workflow" class="level3" data-number="5.1.2">
 <h3 data-number="5.1.2" class="anchored" data-anchor-id="workflow"><span class="header-section-number">5.1.2</span> Workflow</h3>
@@ -315,65 +317,124 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="sec-config" class="level2" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="sec-config"><span class="header-section-number">5.2</span> Configuration</h2>
-<p>All user-adjustable parameters are collected here. No code below this block requires manual editing when adapting this script to a new sampling year or adjusted criteria.</p>
+<p>All user-adjustable parameters are set in this block. The rest of the script reads directly from these values, so changing the sample size, gradient threshold, or stratification variable requires edits only here.</p>
 </section>
 <section id="sec-data" class="level2" data-number="5.3">
 <h2 data-number="5.3" class="anchored" data-anchor-id="sec-data"><span class="header-section-number">5.3</span> Data</h2>
 <section id="input-files" class="level3" data-number="5.3.1">
 <h3 data-number="5.3.1" class="anchored" data-anchor-id="input-files"><span class="header-section-number">5.3.1</span> Input files</h3>
-<p>This chapter requires two spatial datasets, both stored in <code>data/input/</code>:</p>
+<p>Three spatial inputs are required:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Dataset</th>
 <th>Path</th>
-<th>Source</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Classified NetMap reaches</td>
-<td><code>data/input/netmap/netmap_classified.gpkg</code></td>
-<td>ArcGIS output from <a href="./fish_status.html">Chapter 4</a></td>
+<td>Draft NetMap stream network</td>
+<td><code>data/input/netmap/netmap_draft.gpkg</code></td>
+<td>NetMap channel reaches for project focus HUCs</td>
 </tr>
 <tr class="even">
+<td>Snapped AWC fish observations</td>
+<td><code>data/input/netmap/awc_snapped.gpkg</code></td>
+<td>AWC fish presence points snapped to NetMap lines in ArcGIS Pro</td>
+</tr>
+<tr class="odd">
 <td>Focus HUC boundaries</td>
 <td><code>data/input/focus_hucs/focus_hucs.gpkg</code></td>
-<td>Project focus area layer (<a href="./focus_areas.html">Chapter 2</a>)</td>
+<td>Watershed polygons used for landscape stratification (<a href="./focus_areas.html">Chapter 2</a>)</td>
 </tr>
 </tbody>
 </table>
-<p>The classified NetMap layer must include at minimum:</p>
+<p>The NetMap layer must include at minimum:</p>
 <ul>
-<li><code>fishstatus</code> — character field with values <code>"Present"</code> or <code>"Unknown"</code></li>
-<li><code>GRADIENT</code> — numeric channel gradient (unitless proportion)</li>
-<li><code>OUT_DIST</code> — distance to river mouth (km); used to verify digitization direction</li>
+<li><code>GRADIENT</code>: numeric channel gradient (unitless proportion; e.g., 0.05 = 5%)</li>
+<li><code>OUT_DIST</code>: distance to river mouth in km, used to determine upstream/downstream position</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Classified stream network (output from fish_status.qmd ArcGIS workflow)</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>streams <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/input/netmap/netmap_classified.gpkg"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Draft NetMap stream network</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>streams  <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/input/netmap/netmap_draft.gpkg"</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Focus HUC boundaries for stratification</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>hucs <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/input/focus_hucs/focus_hucs.gpkg"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># AWC fish observation points, pre-snapped to stream lines in ArcGIS Pro</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>fish_pts <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/input/netmap/awc_snapped.gpkg"</span>)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Align coordinate reference systems before any spatial operations</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">st_crs</span>(streams) <span class="sc">!=</span> <span class="fu">st_crs</span>(hucs)) {</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  hucs <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(hucs, <span class="fu">st_crs</span>(streams))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># HUC boundaries for landscape stratification</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>hucs     <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/input/focus_hucs/focus_hucs.gpkg"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Align CRS — all subsequent operations use the streams CRS as the reference</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">st_crs</span>(fish_pts) <span class="sc">!=</span> <span class="fu">st_crs</span>(streams)) {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  fish_pts <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(fish_pts, <span class="fu">st_crs</span>(streams))</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">st_crs</span>(hucs) <span class="sc">!=</span> <span class="fu">st_crs</span>(streams)) {</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  hucs <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(hucs, <span class="fu">st_crs</span>(streams))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
-<section id="sec-filter" class="level2" data-number="5.4">
-<h2 data-number="5.4" class="anchored" data-anchor-id="sec-filter"><span class="header-section-number">5.4</span> Filter to Accessible Unknown Reaches</h2>
-<p>Starting from the full classified network, two filters are applied in sequence:</p>
+<section id="sec-classify" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="sec-classify"><span class="header-section-number">5.4</span> Network Classification</h2>
+<p>Reaches are labeled <code>"Present"</code> if they fall at or downstream of a documented fish observation, or <code>"Unknown"</code> if they lie above all documented observations. Only <code>"Unknown"</code> reaches are sampled in subsequent steps.</p>
+<p>Because the fish points have been snapped to the NetMap lines, each point sits on exactly one reach. Any reach with an <code>OUT_DIST</code> value greater than the highest <code>OUT_DIST</code> among fish-bearing reaches is labeled <code>"Unknown"</code>: it lies further from the river mouth and therefore above all confirmed fish observations.</p>
+<section id="arcgis-pro-equivalent" class="level4" data-number="5.4.0.1">
+<h4 data-number="5.4.0.1" class="anchored" data-anchor-id="arcgis-pro-equivalent"><span class="header-section-number">5.4.0.1</span> ArcGIS Pro equivalent</h4>
 <ol type="1">
-<li><strong>Fish status filter</strong>: keep only reaches labeled <code>"Unknown"</code>.</li>
-<li><strong>Gradient barrier filter</strong>: remove reaches at or above <code>GRADIENT_MAX</code>, which are assumed to be above natural passage barriers.</li>
+<li>Open <strong>Select By Location</strong> (Map tab → Selection group).</li>
+<li><strong>Input Features:</strong> stream network layer. <strong>Relationship:</strong> Intersect. <strong>Selecting Features:</strong> AWC fish observation points.</li>
+<li>Open the <strong>Attribute Table</strong> for the stream layer. With the fish-bearing reaches selected, open <strong>Calculate Field</strong>, set the field to <code>fishstatus</code>, and enter the expression <code>"Present"</code>.</li>
+<li>Click <strong>Switch Selection</strong> at the top of the attribute table to invert the selection.</li>
+<li>Run <strong>Calculate Field</strong> again on <code>fishstatus</code> with the expression <code>"Unknown"</code>.</li>
+<li>Click <strong>Clear Selection</strong>.</li>
 </ol>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>streams_unknown <span class="ot">&lt;-</span> streams <span class="sc">|&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(fishstatus <span class="sc">==</span> <span class="st">"Unknown"</span>, GRADIENT <span class="sc">&lt;</span> GRADIENT_MAX)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
 </div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Classification and branching networks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>OUT_DIST</code> approach correctly identifies the most-upstream fish observation across the entire network, but labels all reaches above that threshold as <code>"Unknown"</code> regardless of which tributary they are on. In a branching network, reaches on tributaries that have never been surveyed are labeled <code>"Unknown"</code>, which is the right call for field planning. Reaches on a different branch than the most-upstream observation may be labeled <code>"Present"</code> when they are arguably untested; the ArcGIS Pro Trace Network approach described in <a href="./fish_status.html">Chapter 4</a> handles this more rigorously.</p>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find which reaches contain at least one snapped fish observation</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>fish_reach_ids <span class="ot">&lt;-</span> <span class="fu">st_intersects</span>(streams, fish_pts) <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lengths</span>() <span class="sc">&gt;</span> <span class="dv">0</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># The OUT_DIST of the most-upstream fish-bearing reach sets the classification threshold</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>fish_outdist_threshold <span class="ot">&lt;-</span> streams <span class="sc">|&gt;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(fish_reach_ids) <span class="sc">|&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(OUT_DIST) <span class="sc">|&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">max</span>(<span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Classify all reaches relative to that threshold</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>streams_classified <span class="ot">&lt;-</span> streams <span class="sc">|&gt;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">fishstatus =</span> <span class="fu">if_else</span>(OUT_DIST <span class="sc">&gt;</span> fish_outdist_threshold, <span class="st">"Unknown"</span>, <span class="st">"Present"</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="sec-filter" class="level2" data-number="5.5">
+<h2 data-number="5.5" class="anchored" data-anchor-id="sec-filter"><span class="header-section-number">5.5</span> Filter to Accessible Unknown Reaches</h2>
+<p>Two filters reduce the classified network to accessible candidates:</p>
+<ol type="1">
+<li><strong>Fish status</strong>: keep only reaches labeled <code>"Unknown"</code>.</li>
+<li><strong>Gradient</strong>: remove reaches at or above <code>GRADIENT_MAX</code> (default 20%), treating steep cascade segments as passage barriers.</li>
+</ol>
+<section id="arcgis-pro-equivalent-1" class="level4" data-number="5.5.0.1">
+<h4 data-number="5.5.0.1" class="anchored" data-anchor-id="arcgis-pro-equivalent-1"><span class="header-section-number">5.5.0.1</span> ArcGIS Pro equivalent</h4>
+<ol type="1">
+<li>Open <strong>Select By Attribute</strong> (Map tab → Selection group).</li>
+<li>Build the expression: <code>fishstatus = 'Unknown' AND GRADIENT &lt; 0.20</code>.</li>
+<li>Use <strong>Export Features</strong> (right-click layer → Data → Export Features) to save this subset as a new layer, or continue with the selection active.</li>
+</ol>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -384,16 +445,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Filtering by <code>GRADIENT &lt; GRADIENT_MAX</code> removes individual steep segments but does <strong>not</strong> remove flat reaches that lie upstream of a steep barrier. For example, if a 25% gradient cascade separates a flat headwater reach from the rest of the accessible network, the simple attribute filter retains that headwater reach even though it is physically unreachable by anadromous fish.</p>
-<p>The topologically correct approach is to identify all barrier segments (where <code>GRADIENT &gt;= GRADIENT_MAX</code>), trace the network upstream from each barrier, and remove the entire inaccessible drainage — equivalent to “Select by Attribute → Upstream Trace → Delete” in ArcGIS Pro. If this level of precision is required, this step should be added to the ArcGIS workflow in <a href="./fish_status.html">Chapter 4</a>, and the exported <code>netmap_classified.gpkg</code> should contain only accessible reaches before arriving at this chapter.</p>
-<p>For the current implementation, the simple gradient filter is used as a practical approximation.</p>
+<p>Filtering by <code>GRADIENT &lt; GRADIENT_MAX</code> removes individual steep segments but does <strong>not</strong> remove flat reaches that lie upstream of a steep barrier. If a 25% gradient cascade separates a flat headwater reach from the rest of the accessible network, the attribute filter retains that headwater reach even though anadromous fish cannot reach it.</p>
+<p>The topologically correct approach is to identify all barrier segments (<code>GRADIENT &gt;= GRADIENT_MAX</code>), trace the network upstream from each barrier, and remove the entire inaccessible drainage. In ArcGIS Pro this is done with <strong>Select By Attribute → Upstream Trace → Delete</strong>. If that level of precision is needed, run that step in ArcGIS before exporting <code>data/input/netmap/netmap_draft.gpkg</code>. For the current implementation, the simple attribute filter is used as a practical approximation.</p>
 </div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>streams_unknown <span class="ot">&lt;-</span> streams_classified <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(fishstatus <span class="sc">==</span> <span class="st">"Unknown"</span>, GRADIENT <span class="sc">&lt;</span> GRADIENT_MAX)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sec-launch" class="level2" data-number="5.5">
-<h2 data-number="5.5" class="anchored" data-anchor-id="sec-launch"><span class="header-section-number">5.5</span> Extract Launch Points</h2>
-<p>Each candidate survey reach is reduced to a single <strong>launch point</strong> — the downstream end of the reach, where field crews will begin walking upstream. The NetMap stream network is digitized from mouth to source (the start vertex of each feature is the downstream end), which is consistent with the <code>OUT_DIST</code> attribute: lower <code>OUT_DIST</code> values occur at the start vertex.</p>
-<p><code>st_line_sample()</code> with <code>sample = 0</code> extracts the start (downstream) vertex of each line geometry.</p>
+</section>
+<section id="sec-launch" class="level2" data-number="5.6">
+<h2 data-number="5.6" class="anchored" data-anchor-id="sec-launch"><span class="header-section-number">5.6</span> Extract Launch Points</h2>
+<p>Each candidate reach is represented by a single <strong>launch point</strong> at its downstream end, where crews begin walking upstream. The NetMap network is digitized from mouth to source, so the start vertex of each feature (parameterization position 0) is the downstream end, consistent with <code>OUT_DIST</code> values being lower at the start of each line.</p>
+<section id="arcgis-pro-equivalent-2" class="level4" data-number="5.6.0.1">
+<h4 data-number="5.6.0.1" class="anchored" data-anchor-id="arcgis-pro-equivalent-2"><span class="header-section-number">5.6.0.1</span> ArcGIS Pro equivalent</h4>
+<ol type="1">
+<li>With the accessible unknown reaches selected (or as a standalone layer), open the <strong>Feature Vertices To Points</strong> tool (Data Management Tools → Features).</li>
+<li><strong>Input Features:</strong> the filtered stream layer. <strong>Point Type:</strong> <code>START</code>.</li>
+<li>Each reach produces one point at its downstream vertex. The output inherits all attributes from the parent line.</li>
+</ol>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -404,135 +475,169 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Before running this step, confirm that <code>OUT_DIST</code> values are lower at the start vertex than at the end vertex for a sample of reaches. If NetMap data for a different region are digitized in the opposite direction (source to mouth), use <code>sample = 1</code> instead of <code>sample = 0</code> to extract the downstream end.</p>
+<p>Before running this step, confirm that <code>OUT_DIST</code> values are lower at the start vertex than at the end vertex for a sample of reaches. If NetMap data for a different region are digitized in the opposite direction (source to mouth), use <code>sample = 1</code> instead of <code>sample = 0</code> to extract the correct downstream end.</p>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>launch_points <span class="ot">&lt;-</span> streams_unknown <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geometry =</span> <span class="fu">st_line_sample</span>(geometry, <span class="at">sample =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop any reaches for which a start point could not be extracted</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">st_is_empty</span>(geometry))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>launch_points <span class="ot">&lt;-</span> streams_unknown <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">geometry =</span> <span class="fu">st_line_sample</span>(geometry, <span class="at">sample =</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop any reaches for which a vertex could not be extracted</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">st_is_empty</span>(geometry))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sec-stratify" class="level2" data-number="5.6">
-<h2 data-number="5.6" class="anchored" data-anchor-id="sec-stratify"><span class="header-section-number">5.6</span> Landscape Stratification</h2>
-<p>Each launch point is assigned to the watershed unit (HUC) it falls within via spatial join. Points that fall outside all HUC polygons are dropped; these typically represent reaches at the edge of the study area that slightly cross the boundary.</p>
+</section>
+<section id="sec-stratify" class="level2" data-number="5.7">
+<h2 data-number="5.7" class="anchored" data-anchor-id="sec-stratify"><span class="header-section-number">5.7</span> Landscape Stratification</h2>
+<p>Each launch point is assigned to the watershed unit (HUC) it falls within. The HUC name is the stratification variable used in the quota calculation below. Points outside all HUC polygons are dropped; these are typically edge-of-study-area reaches whose downstream vertex falls just outside the boundary.</p>
+<section id="arcgis-pro-equivalent-3" class="level4" data-number="5.7.0.1">
+<h4 data-number="5.7.0.1" class="anchored" data-anchor-id="arcgis-pro-equivalent-3"><span class="header-section-number">5.7.0.1</span> ArcGIS Pro equivalent</h4>
+<ol type="1">
+<li>Open the <strong>Spatial Join</strong> tool (Analysis Tools → Overlay).</li>
+<li><strong>Target Features:</strong> the launch points layer. <strong>Join Features:</strong> the HUC boundary polygons.</li>
+<li><strong>Join Operation:</strong> One to One. <strong>Match Option:</strong> Within (or Intersect if some points fall on polygon boundaries).</li>
+<li>The output contains all HUC polygon attributes (including the stratification field, e.g., <code>huc_name</code>) joined to each launch point.</li>
+<li>Use <strong>Select By Attribute</strong> to remove any records where the stratification field is null (points that fell outside all polygons).</li>
+</ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>points_stratified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(launch_points, hucs, <span class="at">join =</span> st_within) <span class="sc">|&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(.data[[STRATIFY_BY]]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>points_stratified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(launch_points, hucs, <span class="at">join =</span> st_within) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(.data[[STRATIFY_BY]]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sec-sample" class="level2" data-number="5.7">
-<h2 data-number="5.7" class="anchored" data-anchor-id="sec-sample"><span class="header-section-number">5.7</span> Stratified Proportional Sample</h2>
-<section id="quota-calculation" class="level3" data-number="5.7.1">
-<h3 data-number="5.7.1" class="anchored" data-anchor-id="quota-calculation"><span class="header-section-number">5.7.1</span> Quota calculation</h3>
-<p>Each stratum receives a site quota proportional to its share of the total candidate pool. Quotas are rounded to whole numbers; a correction step adjusts the stratum with the largest rounding remainder to ensure quotas sum to exactly <code>TARGET_N</code>.</p>
+</section>
+<section id="sec-sample" class="level2" data-number="5.8">
+<h2 data-number="5.8" class="anchored" data-anchor-id="sec-sample"><span class="header-section-number">5.8</span> Stratified Proportional Sample</h2>
+<section id="quota-calculation" class="level3" data-number="5.8.1">
+<h3 data-number="5.8.1" class="anchored" data-anchor-id="quota-calculation"><span class="header-section-number">5.8.1</span> Quota calculation</h3>
+<p>Site allocations are proportional to each stratum’s share of the total candidate pool. Rounding to whole numbers can cause the quotas to sum to one more or less than <code>TARGET_N</code>; the stratum with the largest rounding remainder absorbs that adjustment.</p>
+<section id="arcgis-pro-equivalent-for-quota-calculation" class="level4" data-number="5.8.1.1">
+<h4 data-number="5.8.1.1" class="anchored" data-anchor-id="arcgis-pro-equivalent-for-quota-calculation"><span class="header-section-number">5.8.1.1</span> ArcGIS Pro equivalent for quota calculation</h4>
+<ol type="1">
+<li>Right-click the stratification field column in the attribute table and select <strong>Summarize</strong> to count the available points per stratum.</li>
+<li>In a spreadsheet, divide each stratum count by the total to get proportions, multiply each by <code>TARGET_N</code>, and round to the nearest whole number. Apply a remainder correction if the sum does not equal <code>TARGET_N</code>.</li>
+</ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>strata_summary <span class="ot">&lt;-</span> points_stratified <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(.data[[STRATIFY_BY]]) <span class="sc">|&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop      =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">quota_raw =</span> prop <span class="sc">*</span> TARGET_N,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quota     =</span> <span class="fu">round</span>(quota_raw)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Rounding correction</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>discrepancy <span class="ot">&lt;-</span> TARGET_N <span class="sc">-</span> <span class="fu">sum</span>(strata_summary<span class="sc">$</span>quota)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (discrepancy <span class="sc">!=</span> <span class="dv">0</span>) {</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  strata_summary <span class="ot">&lt;-</span> strata_summary <span class="sc">|&gt;</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">remainder =</span> <span class="fu">abs</span>(quota_raw <span class="sc">-</span> quota)) <span class="sc">|&gt;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(remainder))</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  strata_summary<span class="sc">$</span>quota[<span class="dv">1</span>] <span class="ot">&lt;-</span> strata_summary<span class="sc">$</span>quota[<span class="dv">1</span>] <span class="sc">+</span> discrepancy</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>strata_summary <span class="ot">&lt;-</span> points_stratified <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(.data[[STRATIFY_BY]]) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop      =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">quota_raw =</span> prop <span class="sc">*</span> TARGET_N,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quota     =</span> <span class="fu">round</span>(quota_raw)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Rounding correction: adjust the stratum with the largest rounding remainder</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># so that quotas sum to exactly TARGET_N</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>discrepancy <span class="ot">&lt;-</span> TARGET_N <span class="sc">-</span> <span class="fu">sum</span>(strata_summary<span class="sc">$</span>quota)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (discrepancy <span class="sc">!=</span> <span class="dv">0</span>) {</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  strata_summary <span class="ot">&lt;-</span> strata_summary <span class="sc">|&gt;</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">remainder =</span> <span class="fu">abs</span>(quota_raw <span class="sc">-</span> quota)) <span class="sc">|&gt;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(remainder))</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  strata_summary<span class="sc">$</span>quota[<span class="dv">1</span>] <span class="ot">&lt;-</span> strata_summary<span class="sc">$</span>quota[<span class="dv">1</span>] <span class="sc">+</span> discrepancy</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sampling" class="level3" data-number="5.7.2">
-<h3 data-number="5.7.2" class="anchored" data-anchor-id="sampling"><span class="header-section-number">5.7.2</span> Sampling</h3>
+</section>
+<section id="sampling" class="level3" data-number="5.8.2">
+<h3 data-number="5.8.2" class="anchored" data-anchor-id="sampling"><span class="header-section-number">5.8.2</span> Sampling</h3>
 <p>Sites are drawn independently within each stratum using <code>slice_sample()</code>.</p>
+<section id="arcgis-pro-equivalent-for-sampling" class="level4" data-number="5.8.2.1">
+<h4 data-number="5.8.2.1" class="anchored" data-anchor-id="arcgis-pro-equivalent-for-sampling"><span class="header-section-number">5.8.2.1</span> ArcGIS Pro equivalent for sampling</h4>
+<p>No single ArcGIS Pro tool performs stratified proportional random sampling directly. The closest workflow is:</p>
+<ol type="1">
+<li>For each stratum, use <strong>Select By Attribute</strong> to isolate that stratum’s points.</li>
+<li>Use the <strong>Subset Features</strong> tool (or a Python script with a random sort) to select the quota number of points from that stratum.</li>
+<li>Export each stratum’s selection to a temporary layer, then use <strong>Merge</strong> (Data Management Tools → General) to combine all subsets into one output layer.</li>
+</ol>
+<p>The R script handles all strata in a single pipeline.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(SET_SEED)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>field_sites <span class="ot">&lt;-</span> points_stratified <span class="sc">|&gt;</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(.data[[STRATIFY_BY]]) <span class="sc">|&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    strata_summary <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="fu">all_of</span>(STRATIFY_BY), quota),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> STRATIFY_BY</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sampled =</span> <span class="fu">map2</span>(data, quota, \(d, q) <span class="fu">slice_sample</span>(d, <span class="at">n =</span> q))) <span class="sc">|&gt;</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(sampled) <span class="sc">|&gt;</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(SET_SEED)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>field_sites <span class="ot">&lt;-</span> points_stratified <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(.data[[STRATIFY_BY]]) <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    strata_summary <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="fu">all_of</span>(STRATIFY_BY), quota),</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> STRATIFY_BY</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sampled =</span> <span class="fu">map2</span>(data, quota, \(d, q) <span class="fu">slice_sample</span>(d, <span class="at">n =</span> q))) <span class="sc">|&gt;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(sampled) <span class="sc">|&gt;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 </section>
-<section id="sec-output" class="level2" data-number="5.8">
-<h2 data-number="5.8" class="anchored" data-anchor-id="sec-output"><span class="header-section-number">5.8</span> Output</h2>
+</section>
+<section id="sec-output" class="level2" data-number="5.9">
+<h2 data-number="5.9" class="anchored" data-anchor-id="sec-output"><span class="header-section-number">5.9</span> Output</h2>
+<p>The final point layer is exported as a GeoPackage.</p>
+<section id="arcgis-pro-equivalent-4" class="level4" data-number="5.9.0.1">
+<h4 data-number="5.9.0.1" class="anchored" data-anchor-id="arcgis-pro-equivalent-4"><span class="header-section-number">5.9.0.1</span> ArcGIS Pro equivalent</h4>
+<p>Right-click the final point layer in the Contents pane → <strong>Data</strong> → <strong>Export Features</strong>. Set the output location to <code>data/output/field_sites/</code> and the format to GeoPackage.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_write</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  field_sites,</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"data/output/field_sites/stratified_survey_sites.gpkg"</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">delete_layer =</span> <span class="cn">TRUE</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<section id="site-allocation-summary" class="level3" data-number="5.8.1">
-<h3 data-number="5.8.1" class="anchored" data-anchor-id="site-allocation-summary"><span class="header-section-number">5.8.1</span> Site allocation summary</h3>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>strata_summary <span class="sc">|&gt;</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Stratum              =</span> <span class="fu">all_of</span>(STRATIFY_BY),</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Available reaches</span><span class="st">`</span>  <span class="ot">=</span> n,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Proportion           =</span> prop,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Sites allocated</span><span class="st">`</span>    <span class="ot">=</span> quota</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proportion =</span> scales<span class="sc">::</span><span class="fu">percent</span>(Proportion, <span class="at">accuracy =</span> <span class="fl">0.1</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Stratified site allocation by watershed unit."</span>,</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">align   =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_write</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  field_sites,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"data/output/field_sites/stratified_survey_sites.gpkg"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">delete_layer =</span> <span class="cn">TRUE</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="map" class="level3" data-number="5.8.2">
-<h3 data-number="5.8.2" class="anchored" data-anchor-id="map"><span class="header-section-number">5.8.2</span> Map</h3>
+<section id="site-allocation-summary" class="level3" data-number="5.9.1">
+<h3 data-number="5.9.1" class="anchored" data-anchor-id="site-allocation-summary"><span class="header-section-number">5.9.1</span> Site allocation summary</h3>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Reproject to WGS84 for leaflet</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>field_sites_wgs <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(field_sites, <span class="dv">4326</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>hucs_wgs        <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(hucs, <span class="dv">4326</span>)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Color palette by stratum</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>strata_levels <span class="ot">&lt;-</span> <span class="fu">unique</span>(field_sites_wgs[[STRATIFY_BY]])</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">colorFactor</span>(</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">palette =</span> <span class="fu">brewer.pal</span>(<span class="fu">min</span>(<span class="fu">length</span>(strata_levels), <span class="dv">8</span>), <span class="st">"Dark2"</span>),</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">domain  =</span> strata_levels</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">|&gt;</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addProviderTiles</span>(<span class="st">"Esri.WorldTopoMap"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addPolygons</span>(</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">data        =</span> hucs_wgs,</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight      =</span> <span class="fl">1.5</span>,</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">color       =</span> <span class="st">"#555"</span>,</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">fillOpacity =</span> <span class="fl">0.05</span>,</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">label       =</span> <span class="sc">~</span>hucs_wgs[[STRATIFY_BY]]</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">data        =</span> field_sites_wgs,</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius      =</span> <span class="dv">5</span>,</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">color       =</span> <span class="sc">~</span><span class="fu">pal</span>(.data[[STRATIFY_BY]]),</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke      =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">fillOpacity =</span> <span class="fl">0.85</span>,</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">label       =</span> <span class="sc">~</span><span class="fu">paste0</span>(.data[[STRATIFY_BY]], <span class="st">" | OUT_DIST: "</span>,</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">round</span>(OUT_DIST, <span class="dv">1</span>), <span class="st">" km"</span>)</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addLegend</span>(</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">pal    =</span> pal,</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> field_sites_wgs[[STRATIFY_BY]],</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">title  =</span> <span class="st">"Watershed stratum"</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>strata_summary <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Stratum             =</span> <span class="fu">all_of</span>(STRATIFY_BY),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Available reaches</span><span class="st">`</span> <span class="ot">=</span> n,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Proportion          =</span> prop,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Sites allocated</span><span class="st">`</span>   <span class="ot">=</span> quota</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proportion =</span> scales<span class="sc">::</span><span class="fu">percent</span>(Proportion, <span class="at">accuracy =</span> <span class="fl">0.1</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Stratified site allocation by watershed unit."</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">align   =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="map" class="level3" data-number="5.9.2">
+<h3 data-number="5.9.2" class="anchored" data-anchor-id="map"><span class="header-section-number">5.9.2</span> Map</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Reproject to WGS84 for leaflet</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>field_sites_wgs <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(field_sites, <span class="dv">4326</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>hucs_wgs        <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(hucs, <span class="dv">4326</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Color palette keyed to strata</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>strata_levels <span class="ot">&lt;-</span> <span class="fu">unique</span>(field_sites_wgs[[STRATIFY_BY]])</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">colorFactor</span>(</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">palette =</span> <span class="fu">brewer.pal</span>(<span class="fu">min</span>(<span class="fu">length</span>(strata_levels), <span class="dv">8</span>), <span class="st">"Dark2"</span>),</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">domain  =</span> strata_levels</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addProviderTiles</span>(<span class="st">"Esri.WorldTopoMap"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addPolygons</span>(</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">data        =</span> hucs_wgs,</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight      =</span> <span class="fl">1.5</span>,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">color       =</span> <span class="st">"#555"</span>,</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">fillOpacity =</span> <span class="fl">0.05</span>,</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">label       =</span> <span class="sc">~</span>hucs_wgs[[STRATIFY_BY]]</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">data        =</span> field_sites_wgs,</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">radius      =</span> <span class="dv">5</span>,</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">color       =</span> <span class="sc">~</span><span class="fu">pal</span>(.data[[STRATIFY_BY]]),</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">stroke      =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">fillOpacity =</span> <span class="fl">0.85</span>,</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">label       =</span> <span class="sc">~</span><span class="fu">paste0</span>(.data[[STRATIFY_BY]], <span class="st">" | OUT_DIST: "</span>,</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">round</span>(OUT_DIST, <span class="dv">1</span>), <span class="st">" km"</span>)</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addLegend</span>(</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">pal    =</span> pal,</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> field_sites_wgs[[STRATIFY_BY]],</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">title  =</span> <span class="st">"Watershed stratum"</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 

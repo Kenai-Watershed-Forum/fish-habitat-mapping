@@ -3,7 +3,7 @@ title: "Field Site Selection"
 subtitle: "Stratified Proportional Random Sampling of Candidate Survey Sites"
 author:
   - name: "Kenai Watershed Forum"
-    email: ben.meyer@kenaiwatershed.org
+    email: ben@kenaiwatershed.org
 date: last-modified
 toc: true
 toc-location: left
@@ -21,8 +21,8 @@ execute:
 
 This chapter is a working draft. All code blocks are set to `eval: false` because the two input files have not yet been placed in `data/input/netmap/`:
 
--   `netmap_draft.gpkg`: the draft NetMap stream network for project focus HUCs
--   `awc_snapped.gpkg`: AWC fish observation points snapped to NetMap lines in ArcGIS Pro
+- `netmap_draft.gpkg`: the draft NetMap stream network for project focus HUCs
+- `awc_snapped.gpkg`: AWC fish observation points snapped to NetMap lines in ArcGIS Pro
 
 Once both files are in place, set `eval: false` to `eval: true` in this chapter's YAML to render live outputs.
 :::
@@ -86,15 +86,15 @@ SET_SEED <- 8419
 Three spatial inputs are required:
 
 | Dataset | Path | Description |
-|---|---|---|
+|------------------------|------------------------|------------------------|
 | Draft NetMap stream network | `data/input/netmap/netmap_draft.gpkg` | NetMap channel reaches for project focus HUCs |
 | Snapped AWC fish observations | `data/input/netmap/awc_snapped.gpkg` | AWC fish presence points snapped to NetMap lines in ArcGIS Pro |
 | Focus HUC boundaries | `data/input/focus_hucs/focus_hucs.gpkg` | Watershed polygons used for landscape stratification ([Chapter 2](focus_areas.qmd)) |
 
 The NetMap layer must include at minimum:
 
--   `GRADIENT`: numeric channel gradient (unitless proportion; e.g., 0.05 = 5%)
--   `OUT_DIST`: distance to river mouth in km, used to determine upstream/downstream position
+- `GRADIENT`: numeric channel gradient (unitless proportion; e.g., 0.05 = 5%)
+- `OUT_DIST`: distance to river mouth in km, used to determine upstream/downstream position
 
 ```{r}
 #| label: load-data
