@@ -26,3 +26,9 @@ I have been using google gemini to develop a complex script that will aid in sel
 7/1/2026
 
 I have placed a folder at other/documents/YK_IP_Software_Release. It contains contents downloaded from <https://code.usgs.gov/cooperativeresearchunits/alaska/salmon-freshwater-habitat>. I want to examine and understand this codebase and see if it has utility for the project being executed here in this project (fish-habitat-mapping). I am Python illiterate currently, but want to learn.
+
+7/20/2026
+
+into field_site_selection.qmd, i want to introduce an additional procedure. as an initial filter, i only want to include potential field site locations that are within 2 km of a road or trail. the user will need to provide a GIS file of some sort to illlustrate the locations of the roads and trails.\
+\
+help me make a plan to implement this request

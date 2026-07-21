@@ -13,5 +13,3 @@ For historical project context:
 - 2023 KWF Blog Post, two essays: <https://www.kenaiwatershed.org/news-media/mapping-alaskas-salmon-streams/>
 
 - 2021 - 2025 Fish Habitat Mapping: [Salmon Habitat Mapping in the Central Kenai Peninsula 2021-2025](https://kenai-watershed-forum.github.io/salmon-habitat-mapping/)
-
-- Ballot Measure 1 (2018): [https://ballotpedia.org/Alaska_Ballot_Measure_1,*Salmon_Habitat_Protections_and_Permits_Initiative*(2018)](https://ballotpedia.org/Alaska_Ballot_Measure_1,Salmon_Habitat_Protections_and_Permits_Initiative(2018))

@@ -1,6 +1,6 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-07-01 (added YK_IP Software Release section)
+Last updated: 2026-07-20 (implemented optional road/trail proximity filter in field_site_selection.qmd)
 
 Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
@@ -17,7 +17,7 @@ This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habi
 | `focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. |
 | `existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** |
 | `fish_status.qmd` | Knowledge Status of Fish Presence/Absence — planned workflow: (1) build most-upstream anadromous fish observation layer from `existing_fish_obs.qmd` output + AWC terminal endpoints, (2) snap to NetMap channel reaches, (3) use Trace Network tools to assign most-upstream status, (4) label all segments as Fish Present / Fish Absent / Unknown. Early draft, no analysis code yet. |
-| `field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network) and `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines in ArcGIS). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. |
+| `field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. **Complete implementation with optional road/trail accessibility filter.** Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network), `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines), and optional `data/input/roads_trails/roads_trails.gpkg` (roads/trails layer). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. |
 | `summary.qmd` | Summary |
 | `references.qmd` | References |
 
@@ -231,7 +231,7 @@ Note: the AFFI section uses `%>%` (magrittr pipe) in places due to its ChatGPT-g
 
 ### Purpose
 
-Generates candidate field survey sites for the Last Fish Observed (LFO) method using a stratified proportional random sampling design. Takes two GIS inputs prepared in ArcGIS Pro and performs all classification, filtering, and sampling in R. All chunks are `eval: false` pending the GIS input files.
+Generates candidate field survey sites for the Last Fish Observed (LFO) method using a stratified proportional random sampling design. **Complete implementation with optional road/trail accessibility filter.** Takes GIS inputs prepared in ArcGIS Pro and performs all classification, filtering, and sampling in R. All chunks are `eval: false` pending the GIS input files.
 
 Each pipeline step documents both the R implementation and the equivalent ArcGIS Pro tool workflow.
 
@@ -242,10 +242,11 @@ Each pipeline step documents both the R implementation and the equivalent ArcGIS
 | Draft NetMap stream network | `data/input/netmap/netmap_draft.gpkg` | Must include `GRADIENT` (unitless proportion) and `OUT_DIST` (km to mouth) attributes |
 | Snapped AWC fish observations | `data/input/netmap/awc_snapped.gpkg` | AWC presence points manually snapped to NetMap lines in ArcGIS Pro |
 | Focus HUC boundaries | `data/input/focus_hucs/focus_hucs.gpkg` | Polygon layer; stratification field set by `STRATIFY_BY` parameter |
+| Roads and trails (optional) | `data/input/roads_trails/roads_trails.gpkg` | Polyline layer; only loaded if road accessibility filter is enabled |
 
 ### Output
 
-`data/output/field_sites/stratified_survey_sites.gpkg`
+`data/output/field_sites/stratified_survey_sites.gpkg` — includes `dist_to_road_m` column documenting distance to nearest road/trail when filter is enabled, or `NA` when disabled.
 
 ### User parameters (top of script)
 
@@ -255,22 +256,42 @@ Each pipeline step documents both the R implementation and the equivalent ArcGIS
 | `GRADIENT_MAX` | 0.20 | Gradient threshold above which reaches are considered inaccessible (unitless, not percent) |
 | `STRATIFY_BY` | `"huc_name"` | Column in the HUC layer to use as stratification variable |
 | `SET_SEED` | 8419 | Random seed for reproducible sampling |
+| `FILTER_BY_ROAD_PROXIMITY` | `TRUE` | Boolean: enable/disable road proximity filtering |
+| `ROADS_TRAILS_PATH` | `"data/input/roads_trails/roads_trails.gpkg"` | Path to roads/trails GIS file (shapefile, GeoPackage, GeoJSON, etc.) |
+| `ROAD_PROXIMITY_KM` | 2.0 | Maximum distance in km from a road/trail for candidate sites |
 
 ### Pipeline steps
 
-1.  **Load data** — reads three inputs, aligns CRS to streams layer
+1.  **Load data** — reads three required + one optional input, aligns CRS to streams layer
 2.  **Network classification** — uses `st_intersects()` to find reaches containing fish points; classifies all reaches with `OUT_DIST > max(fish reach OUT_DIST)` as `"Unknown"`, remainder as `"Present"`. Simplified vs. topological trace; see callout in chapter.
 3.  **Filter to accessible unknown reaches** — `filter(fishstatus == "Unknown", GRADIENT < GRADIENT_MAX)`
-4.  **Extract launch points** — `st_line_sample(geometry, sample = 0)` extracts downstream (start) vertex of each reach, assuming mouth-to-source digitization (consistent with `OUT_DIST` increasing toward headwaters)
-5.  **Landscape stratification** — `st_join(launch_points, hucs, join = st_within)`; points outside all polygons dropped
-6.  **Quota calculation** — proportional allocation with largest-remainder rounding correction to guarantee total = `TARGET_N`
-7.  **Sampling** — `slice_sample()` per stratum inside a nested tibble pipeline
-8.  **Export** — `st_write()` to GeoPackage; summary kable table and leaflet map rendered as visible output
+4.  **Filter to road-accessible reaches (optional)** — when enabled, computes `st_distance()` from each launch point to roads/trails; filters to points ≤ `ROAD_PROXIMITY_KM`; adds `dist_to_road_m` column. When disabled, all points proceed with `dist_to_road_m = NA`. Uses Euclidean distance; callout notes this may underestimate walking distance in high-relief terrain.
+5.  **Extract launch points** — `st_line_sample(geometry, sample = 0)` extracts downstream (start) vertex of each reach, assuming mouth-to-source digitization (consistent with `OUT_DIST` increasing toward headwaters)
+6.  **Landscape stratification** — `st_join(launch_points, hucs, join = st_within)`; points outside all polygons dropped
+7.  **Quota calculation** — proportional allocation with largest-remainder rounding correction to guarantee total = `TARGET_N`
+8.  **Sampling** — `slice_sample()` per stratum inside a nested tibble pipeline
+9.  **Export** — `st_write()` to GeoPackage; summary kable table and leaflet map (with optional road layer overlay) rendered as visible output
+
+### ArcGIS Pro equivalent workflows
+
+**Network classification:** Spatial Join (stream reaches to fish points; Count matching records); all results populated into new field.
+
+**Gradient filter:** Select by Attributes on `GRADIENT < 0.20`; Export selected features.
+
+**Road proximity filter:** Select by Location — Input = launch points, Selecting Features = roads/trails, Relationship = "Within a distance of", Distance = 2 km; Export selected points.
+
+**Extract launch points:** Feature Vertices to Points with "Start" option.
+
+**Stratification:** Spatial Join (launch points to HUC polygons); all results populated into new field.
+
+**Sampling & quota:** Done in R (no direct ArcGIS equivalent); results exported back to GIS for field deployment.
 
 ### Known limitations
 
 - The `OUT_DIST` classification approach is a simplification; on branching networks it may over-assign `"Present"` to untested tributaries. The ArcGIS Trace Network approach (Chapter 4) provides the topologically rigorous alternative.
 - Gradient barrier filter removes individual steep segments only — flat reaches above a cascade are retained. Upstream pruning from barriers should be done in ArcGIS before exporting the input NetMap layer if topological accuracy is required.
+- Road proximity filter uses Euclidean distance; actual walking distance may be longer in high-relief terrain. Cost-distance refinement (raster-based distance weighted by slope) is a potential enhancement for future work.
+- Road/trail layer quality and completeness directly affect filter accuracy; ensure input layer includes all user-accessible corridors (including spurs, foot trails, and access roads) not just main highways.
 
 ------------------------------------------------------------------------
 
