@@ -12,7 +12,6 @@ book:
     - intro.qmd
     - focus_areas.qmd
     - existing_fish_obs.qmd
-    - fish_status.qmd
     - field_site_selection.qmd
     - summary.qmd
     - references.qmd
@@ -24,6 +23,15 @@ format:
     theme:
       - cosmo
       - brand
+    navbar:
+      tools:
+        - icon: download
+          href: fish-habitat-mapping.docx
+          text: Download as Word
+  docx:
+    toc: true
+    toc-depth: 3
+    number-sections: true
 #  pdf:
 #    documentclass: scrreprt
 

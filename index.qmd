@@ -1,9 +1,28 @@
+---
+title: "Preface"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: false
+execute:
+  message: false
+  warning: false
+---
+
 # Preface {.unnumbered}
 
-This is a Quarto book.
+This document will serve as the central repository for Kenai Watershed Forum's freshwater fish habitat mapping efforts, 2021 - present.
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+This draft-in-progress is currently is not intended as a public-facing, complete source of information, but it will become so as the work continues.
 
-```{r}
-1 + 1
-```
+See the Introduction section for external links to relevant materials related to this project.

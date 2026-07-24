@@ -36,10 +36,11 @@ library(sf)
 library(xfun)
 ```
 
-This chapter presents the total extent of currently active project area
+This chapter presents the extents of currently active project areas.
 
-(leaflet map of currently active project HUCs)
+See the PDF linked below for a description of the focus HUCs as of July 2026:
 
-(download link to zip file of project HUCs)
+```{r echo = F}
+xfun::embed_file("other/documents/NCRF 2026 Scope of Work Revision Request.pdf", text = "Memo with Kenai Focus HUC Details")
 
-(description/justification for current areas)
+```

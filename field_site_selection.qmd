@@ -5,11 +5,16 @@ author:
   - name: "Kenai Watershed Forum"
     email: ben@kenaiwatershed.org
 date: last-modified
-toc: true
-toc-location: left
-toc-depth: 3
-toc-title: "Contents"
-number-sections: true
+date-format: "MMMM D, YYYY"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
 execute:
   message: false
   warning: false

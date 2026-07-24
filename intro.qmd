@@ -4,7 +4,7 @@ This introductory section will be fully developed at a later stage of this proje
 
 Current Project Operations Manuals:
 
-- For Scientists: [Mapping Anadromous Habitat in the Kenai Peninsula BoroughProject Manual 2025 - 2027 \[DRAFT\]](https://docs.google.com/document/d/1sJe2g893Urh1uhxVKh1RBIGE8733W4yfJP6w0fgwE0Q/edit?tab=t.0)
+- For Scientists: [Mapping Anadromous Habitat in the Kenai Peninsula Borough Project Manual 2025 - 2027 \[DRAFT\]](https://docs.google.com/document/d/1sJe2g893Urh1uhxVKh1RBIGE8733W4yfJP6w0fgwE0Q/edit?tab=t.0)
 
 - For Volunteers: [“Backyard Salmonscapes” Volunteer Manual 2025 - 2027 \[DRAFT\]](https://docs.google.com/document/d/1kSSwiPA2UE3loWHlbpJ0-behVCqW1g-kSF4MkghcFZM/edit?tab=t.0)
 
@@ -13,3 +13,5 @@ For historical project context:
 - 2023 KWF Blog Post, two essays: <https://www.kenaiwatershed.org/news-media/mapping-alaskas-salmon-streams/>
 
 - 2021 - 2025 Fish Habitat Mapping: [Salmon Habitat Mapping in the Central Kenai Peninsula 2021-2025](https://kenai-watershed-forum.github.io/salmon-habitat-mapping/)
+
+- Launching a new effort in 2025: <https://www.kenaiwatershed.org/news-media/fish-habitat-mapping-2025/>

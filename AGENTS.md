@@ -1,6 +1,6 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-07-20 (implemented optional road/trail proximity filter in field_site_selection.qmd)
+Last updated: 2026-07-23 (removed Chapter 4, standardized code-folding, added MS Word output format with navbar download button)
 
 Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
@@ -12,11 +12,10 @@ This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habi
 
 | File | Status |
 |----|----|
-| `index.qmd` | Intro / landing page (placeholder) |
+| `index.qmd` | Preface / landing page (placeholder) |
 | `intro.qmd` | Introduction |
 | `focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. |
 | `existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** |
-| `fish_status.qmd` | Knowledge Status of Fish Presence/Absence — planned workflow: (1) build most-upstream anadromous fish observation layer from `existing_fish_obs.qmd` output + AWC terminal endpoints, (2) snap to NetMap channel reaches, (3) use Trace Network tools to assign most-upstream status, (4) label all segments as Fish Present / Fish Absent / Unknown. Early draft, no analysis code yet. |
 | `field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. **Complete implementation with optional road/trail accessibility filter.** Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network), `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines), and optional `data/input/roads_trails/roads_trails.gpkg` (roads/trails layer). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. |
 | `summary.qmd` | Summary |
 | `references.qmd` | References |
@@ -333,6 +332,40 @@ The end products — RCAs and per-reach valley bottom width — are key landscap
 - Input NetMap data for the YK project used `.gdb` format; the Kenai project currently stores NetMap in `.gpkg`. ArcPy can read `.gpkg` files, but the scripts assume `.gdb` workspace environments — this will need to be reconciled.
 - IFSAR DEM source: https://apps.nationalmap.gov/downloader/ (5m DSM tiles; see IP 4 for details).
 - Outputs from this pipeline would likely be stored in `data/input/netmap/` once produced, as reach-level habitat attributes to join to the NetMap network.
+
+------------------------------------------------------------------------
+
+## Recent Updates (2026-07-23)
+
+### Chapter removals and restructuring
+
+- **Removed `fish_status.qmd`** (former Chapter 4, "Knowledge Status of Fish Presence/Absence") from the book. Its intended content and workflow (network classification, Trace Network tools, reach-level status assignment) is now addressed in `field_site_selection.qmd` (now Chapter 4 after removal). The chapter list in `_quarto.yml` has been updated accordingly.
+
+### Code folding standardization
+
+All chapters now render with consistent code folding behavior:
+- Code blocks are **collapsed by default** with a clickable "Show code" button
+- Applied to: `index.qmd`, `intro.qmd`, `focus_areas.qmd`, `existing_fish_obs.qmd`, `field_site_selection.qmd`, and `summary.qmd`
+- **YAML configuration:** Each chapter now includes in the `format.html` section:
+  ```yaml
+  code-fold: true
+  code-summary: "Show code"
+  ```
+
+### MS Word output format
+
+Added MS Word (DOCX) as an output format alongside HTML:
+- **Config location:** `_quarto.yml` → `format.docx` section with:
+  - `toc: true` — includes table of contents
+  - `toc-depth: 3` — matches HTML TOC depth
+  - `number-sections: true` — preserves section numbering
+- **Navbar download button:** Added a download icon to the HTML navbar that links to the generated Word document:
+  - **Config:** `format.html.navbar.tools` in `_quarto.yml`
+  - **Icon:** `download` (display icon next to GitHub button)
+  - **Text:** "Download as Word"
+  - **Target:** `fish-habitat-mapping.docx` in project root
+
+**Publishing note:** After rendering with `quarto render`, the generated `fish-habitat-mapping.docx` file must be committed and pushed to GitHub for the download link to work on the published site.
 
 ------------------------------------------------------------------------
 
