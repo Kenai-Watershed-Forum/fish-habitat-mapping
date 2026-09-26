@@ -20,6 +20,16 @@
     ]
   },
   {
+    "objectID": "focus_areas.html",
+    "href": "focus_areas.html",
+    "title": "3  Project Focus Areas",
+    "section": "",
+    "text": "This chapter presents the extents of currently active project areas.\nSee the PDF linked below for a description of the focus HUCs as of July 2026:\n\n\nMemo with Kenai Focus HUC Details",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Project Focus Areas</span>"
+    ]
+  },
+  {
     "objectID": "existing_fish_obs.html",
     "href": "existing_fish_obs.html",
     "title": "4  Existing Fish Observations within the Kenai Borough",
@@ -100,46 +110,6 @@
     ]
   },
   {
-    "objectID": "summary.html",
-    "href": "summary.html",
-    "title": "6  Summary",
-    "section": "",
-    "text": "Content TK.",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Summary</span>"
-    ]
-  },
-  {
-    "objectID": "references.html",
-    "href": "references.html",
-    "title": "References",
-    "section": "",
-    "text": "King, Ryan S, Coowe M Walker, Dennis F Whigham, Steven J Baird, and\nJeffrey A Back. 2012. “Catchment Topography and Wetland\nGeomorphology Drive Macroinvertebrate Community Structure and Juvenile\nSalmonid Distributions in South-Central Alaska Headwater\nStreams.” Freshw. Sci. 31 (2): 341–64. https://doi.org/10.1899/11-109.1.\n\n\nMeyer, Benjamin E., Mark S. Wipfli, Erik R. Schoen, Daniel J. Rinella,\nand Jeffrey A. Falke. 2023. “Landscape Characteristics Influence\nProjected Growth Rates of Stream-Resident Juvenile Salmon in the Face of\nClimate Change in the Kenai River Watershed, South-Central\nAlaska.” Transactions of the American Fisheries Society\n152 (2): 169–86. https://doi.org/10.1002/tafs.10397.",
-    "crumbs": [
-      "References"
-    ]
-  },
-  {
-    "objectID": "focus_areas.html",
-    "href": "focus_areas.html",
-    "title": "3  Project Focus Areas",
-    "section": "",
-    "text": "This chapter presents the extents of currently active project areas.\nSee the PDF linked below for a description of the focus HUCs as of July 2026:\n\n\nMemo with Kenai Focus HUC Details",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Project Focus Areas</span>"
-    ]
-  },
-  {
-    "objectID": "fish_status.html",
-    "href": "fish_status.html",
-    "title": "4  Knowledge Status of Fish Presence/Absence",
-    "section": "",
-    "text": "This chapter addresses the known statuses of fish presence / absence for channel segments within the project areas.\nPlan:\n\nCreate full point layer of all known most-upstream anadromous fish observations\n\nUse results from chapter in this document, “Existing Fish Observations within the Kenai Borough”\nCreate new additional points at most-upstream terminal ends of 2025 Anadromous Waters Catalog\nCombine the two above data sources into a single layer\n\nSnap all anadomous fish observation points to nearest NetMap channel reach\nUse Trace Network tools to assign most-upstream status to snapped points.\nAssign status to channel all channel segments above and below each most-upstream point\n\nStatus options: Fish Present, Fish Absent, or Unknown",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Knowledge Status of Fish Presence/Absence</span>"
-    ]
-  },
-  {
     "objectID": "field_site_selection.html",
     "href": "field_site_selection.html",
     "title": "5  Field Site Selection",
@@ -175,6 +145,16 @@
     "title": "5  Field Site Selection",
     "section": "5.3 Data",
     "text": "5.3 Data\n\n5.3.1 Input files\nThree spatial inputs are required:\n\n\n\nDataset\nPath\nDescription\n\n\n\n\nDraft NetMap stream network\ndata/input/netmap/netmap_draft.gpkg\nNetMap channel reaches for project focus HUCs\n\n\nSnapped AWC fish observations\ndata/input/netmap/awc_snapped.gpkg\nAWC fish presence points snapped to NetMap lines in ArcGIS Pro\n\n\nFocus HUC boundaries\ndata/input/focus_hucs/focus_hucs.gpkg\nWatershed polygons used for landscape stratification (Chapter 2)\n\n\n\nThe NetMap layer must include at minimum:\n\nGRADIENT: numeric channel gradient (unitless proportion; e.g., 0.05 = 5%)\nOUT_DIST: distance to river mouth in km, used to determine upstream/downstream position\n\n\n\nShow code\n# Draft NetMap stream network\nstreams  &lt;- st_read(\"data/input/netmap/netmap_draft.gpkg\")\n\n# AWC fish observation points, pre-snapped to stream lines in ArcGIS Pro\nfish_pts &lt;- st_read(\"data/input/netmap/awc_snapped.gpkg\")\n\n# HUC boundaries for landscape stratification\nhucs     &lt;- st_read(\"data/input/focus_hucs/focus_hucs.gpkg\")\n\n# Align CRS — all subsequent operations use the streams CRS as the reference\nif (st_crs(fish_pts) != st_crs(streams)) {\n  fish_pts &lt;- st_transform(fish_pts, st_crs(streams))\n}\nif (st_crs(hucs) != st_crs(streams)) {\n  hucs &lt;- st_transform(hucs, st_crs(streams))\n}",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+    ]
+  },
+  {
+    "objectID": "field_site_selection.html#sec-classify",
+    "href": "field_site_selection.html#sec-classify",
+    "title": "5  Field Site Selection",
+    "section": "5.4 Network Classification",
+    "text": "5.4 Network Classification\nReaches are labeled \"Present\" if they fall at or downstream of a documented fish observation, or \"Unknown\" if they lie above all documented observations. Only \"Unknown\" reaches are sampled in subsequent steps.\nBecause the fish points have been snapped to the NetMap lines, each point sits on exactly one reach. Any reach with an OUT_DIST value greater than the highest OUT_DIST among fish-bearing reaches is labeled \"Unknown\": it lies further from the river mouth and therefore above all confirmed fish observations.\n\n5.4.0.1 ArcGIS Pro equivalent\n\nOpen Select By Location (Map tab → Selection group).\nInput Features: stream network layer. Relationship: Intersect. Selecting Features: AWC fish observation points.\nOpen the Attribute Table for the stream layer. With the fish-bearing reaches selected, open Calculate Field, set the field to fishstatus, and enter the expression \"Present\".\nClick Switch Selection at the top of the attribute table to invert the selection.\nRun Calculate Field again on fishstatus with the expression \"Unknown\".\nClick Clear Selection.\n\n\n\n\n\n\n\nNoteClassification and branching networks\n\n\n\nThe OUT_DIST approach correctly identifies the most-upstream fish observation across the entire network, but labels all reaches above that threshold as \"Unknown\" regardless of which tributary they are on. In a branching network, reaches on tributaries that have never been surveyed are labeled \"Unknown\", which is the right call for field planning. Reaches on a different branch than the most-upstream observation may be labeled \"Present\" when they are arguably untested; the ArcGIS Pro Trace Network approach described in Chapter 4 handles this more rigorously.\n\n\n\n\nShow code\n# Find which reaches contain at least one snapped fish observation\nfish_reach_ids &lt;- st_intersects(streams, fish_pts) |&gt;\n  lengths() &gt; 0\n\n# The OUT_DIST of the most-upstream fish-bearing reach sets the classification threshold\nfish_outdist_threshold &lt;- streams |&gt;\n  filter(fish_reach_ids) |&gt;\n  pull(OUT_DIST) |&gt;\n  max(na.rm = TRUE)\n\n# Classify all reaches relative to that threshold\nstreams_classified &lt;- streams |&gt;\n  mutate(\n    fishstatus = if_else(OUT_DIST &gt; fish_outdist_threshold, \"Unknown\", \"Present\")\n  )",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
     ]
@@ -230,13 +210,43 @@
     ]
   },
   {
-    "objectID": "field_site_selection.html#sec-classify",
-    "href": "field_site_selection.html#sec-classify",
-    "title": "5  Field Site Selection",
-    "section": "5.4 Network Classification",
-    "text": "5.4 Network Classification\nReaches are labeled \"Present\" if they fall at or downstream of a documented fish observation, or \"Unknown\" if they lie above all documented observations. Only \"Unknown\" reaches are sampled in subsequent steps.\nBecause the fish points have been snapped to the NetMap lines, each point sits on exactly one reach. Any reach with an OUT_DIST value greater than the highest OUT_DIST among fish-bearing reaches is labeled \"Unknown\": it lies further from the river mouth and therefore above all confirmed fish observations.\n\n5.4.0.1 ArcGIS Pro equivalent\n\nOpen Select By Location (Map tab → Selection group).\nInput Features: stream network layer. Relationship: Intersect. Selecting Features: AWC fish observation points.\nOpen the Attribute Table for the stream layer. With the fish-bearing reaches selected, open Calculate Field, set the field to fishstatus, and enter the expression \"Present\".\nClick Switch Selection at the top of the attribute table to invert the selection.\nRun Calculate Field again on fishstatus with the expression \"Unknown\".\nClick Clear Selection.\n\n\n\n\n\n\n\nNoteClassification and branching networks\n\n\n\nThe OUT_DIST approach correctly identifies the most-upstream fish observation across the entire network, but labels all reaches above that threshold as \"Unknown\" regardless of which tributary they are on. In a branching network, reaches on tributaries that have never been surveyed are labeled \"Unknown\", which is the right call for field planning. Reaches on a different branch than the most-upstream observation may be labeled \"Present\" when they are arguably untested; the ArcGIS Pro Trace Network approach described in Chapter 4 handles this more rigorously.\n\n\n\n\nShow code\n# Find which reaches contain at least one snapped fish observation\nfish_reach_ids &lt;- st_intersects(streams, fish_pts) |&gt;\n  lengths() &gt; 0\n\n# The OUT_DIST of the most-upstream fish-bearing reach sets the classification threshold\nfish_outdist_threshold &lt;- streams |&gt;\n  filter(fish_reach_ids) |&gt;\n  pull(OUT_DIST) |&gt;\n  max(na.rm = TRUE)\n\n# Classify all reaches relative to that threshold\nstreams_classified &lt;- streams |&gt;\n  mutate(\n    fishstatus = if_else(OUT_DIST &gt; fish_outdist_threshold, \"Unknown\", \"Present\")\n  )",
+    "objectID": "netmap_prep.html",
+    "href": "netmap_prep.html",
+    "title": "6  NetMap Preparation",
+    "section": "",
+    "text": "6.1 Stream Width Survey Data\nField stream width measurements were collected using an ArcGIS Field Maps mobile form and exported from an ArcGIS Online layer connected to KWF’s ArcGIS Pro project map. The raw field export contains GNSS location fields that are only populated when a point is captured live using the device’s GPS; points that were manually repositioned on the map do not carry those values, leaving some records without coordinates.\nTo resolve this, a snapping layer was built in ArcGIS Pro desktop. Each survey point was snapped to the most recent NetMap stream line received from Terrainworks (delivered 7/27/2026), or to a manually drawn channel alignment QC line where a channel was present but not yet represented in the NetMap line work. Coordinates were then calculated for every snapped point and stored in the latitude1/longitude1 fields. This snapping layer includes only the points where a channel width was estimated in the field, and is the file read in below. The steps that follow retain the columns needed for Terrainworks and prepare stream width data for delivery.",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Field Site Selection</span>"
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>NetMap Preparation</span>"
+    ]
+  },
+  {
+    "objectID": "netmap_prep.html#stream-width-survey-data",
+    "href": "netmap_prep.html#stream-width-survey-data",
+    "title": "6  NetMap Preparation",
+    "section": "",
+    "text": "6.1.1 Read raw data\n\n\nShow code\nnetmap_raw &lt;- read.csv(\"data/input/netmap/netmap_stream_widths_snapping_20260925.csv\")\n\n\nThe file contains 151 rows and 110 columns. Available column names are listed below for reference.\n\n\nShow code\ncolnames(netmap_raw)\n\n\n  [1] \"OBJECTID\"                        \"esrignss_speed\"                 \n  [3] \"esrignss_direction\"              \"esrisnsr_azimuth\"               \n  [5] \"esrignss_positionsourcetype\"     \"esrignss_receiver\"              \n  [7] \"esrignss_h_rms\"                  \"esrignss_v_rms\"                 \n  [9] \"esrignss_latitude\"               \"esrignss_longitude\"             \n [11] \"esrignss_altitude\"               \"esrignss_pdop\"                  \n [13] \"esrignss_hdop\"                   \"esrignss_vdop\"                  \n [15] \"esrignss_fixtype\"                \"esrignss_correctionage\"         \n [17] \"esrignss_stationid\"              \"esrignss_numsats\"               \n [19] \"esrignss_fixdatetime\"            \"esrignss_avg_h_rms\"             \n [21] \"esrignss_avg_v_rms\"              \"esrignss_avg_positions\"         \n [23] \"esrignss_h_stddev\"               \"GlobalID\"                       \n [25] \"Survey_Time_and_Date\"            \"Observer4\"                      \n [27] \"Observer3\"                       \"Observer2\"                      \n [29] \"Observer1\"                       \"Longitude\"                      \n [31] \"Latitude\"                        \"Other_water_quality_notes\"      \n [33] \"pH\"                              \"Specific_Conductivity_Unit\"     \n [35] \"Specific_Conductivity\"           \"Dissolved_Oxygen_Unit\"          \n [37] \"Dissolved_Oxygen\"                \"Water_Temperature\"              \n [39] \"Water_Temperature_Unit\"          \"Instrument_Used\"                \n [41] \"Stream_Width\"                    \"Fish_Habitat_Features_1\"        \n [43] \"Sub_Dominant_Substrate\"          \"Dominant_Substrate\"             \n [45] \"Stream_Width_Unit\"               \"Fish_Habitat_Features_2\"        \n [47] \"Gradient_Unit\"                   \"Gradient\"                       \n [49] \"FRPA_Barrier\"                    \"On_Main_Channel\"                \n [51] \"Channel_Type\"                    \"Survey_end_reason\"              \n [53] \"Fish_Survey_Performed\"           \"Stream_physical_characteristics\"\n [55] \"Fish_capture_data_notes\"         \"Minnow_trap_effort_notes\"       \n [57] \"Eletrofishing_effort_notes\"      \"Trap_position\"                  \n [59] \"Trap_quantity\"                   \"Trap_deployment_time\"           \n [61] \"Fish_present\"                    \"End_of_survey\"                  \n [63] \"Trap_check_time\"                 \"Fish_Count_1\"                   \n [65] \"Fish_Life_Stage_1\"               \"Fish_Species_1\"                 \n [67] \"Electrofishing_End_Time\"         \"Electrofishing_Start_Time\"      \n [69] \"Fish_Life_Stage_2\"               \"Fish_Species_2\"                 \n [71] \"Fish_Capture_1_Notes\"            \"Additional_Fish_Capture_Data\"   \n [73] \"Fish_Capture_2_Notes\"            \"Fish_Count_2\"                   \n [75] \"Fish_Species_4\"                  \"Fish_Capture_3_Notes\"           \n [77] \"Fish_Count_3\"                    \"Fish_Life_Stage_3\"              \n [79] \"Fish_Species_3\"                  \"Fish_Capture_6_Notes\"           \n [81] \"Fish_Count_6\"                    \"Fish_Life_Stage_6\"              \n [83] \"Fish_Species_6\"                  \"Fish_Capture_5_Notes\"           \n [85] \"Fish_Count_5\"                    \"Fish_Life_Stage_5\"              \n [87] \"Fish_Species_5\"                  \"Fish_Capture_4_Notes\"           \n [89] \"Fish_Count_4\"                    \"Fish_Life_Stage_4\"              \n [91] \"GPS_Accuracy\"                    \"Turbidity_Observation_Time\"     \n [93] \"Turbidity_Sample_Collection_Tim\" \"Turbidity\"                      \n [95] \"Stream_Width_3\"                  \"Stream_Width_2\"                 \n [97] \"Gradient_Facing_Downstream\"      \"Distance_Unit\"                  \n [99] \"Downstream_Gradient_Distance\"    \"Upstream_Gradient_Distance\"     \n[101] \"Stream_Origin_Point\"             \"esritask_type\"                  \n[103] \"esritask_assignee\"               \"esritask_status\"                \n[105] \"esritask_priority\"               \"esritask_duedate\"               \n[107] \"esritask_description\"            \"esritask_notes\"                 \n[109] \"longitude1\"                      \"latitude1\"                      \n\n\n\n\n6.1.2 Select and prepare columns\nSelect the required columns and calculate average stream width across multiple measurements, converting all widths to meters.\n\n\nShow code\n# Helper function to parse range strings and convert to meters\nparse_width_range &lt;- function(range_str, unit) {\n  if (is.na(range_str) || is.na(unit)) {\n    return(NA_real_)\n  }\n  \n  # Parse range string (e.g., \"0-1\" -&gt; midpoint 0.5)\n  parts &lt;- as.numeric(strsplit(range_str, \"-\")[[1]])\n  if (length(parts) != 2 || any(is.na(parts))) {\n    return(NA_real_)\n  }\n  \n  midpoint &lt;- parts[1] + (parts[2] - parts[1]) / 2\n  \n  # Convert feet to meters if needed\n  if (tolower(unit) == \"ft\") {\n    midpoint &lt;- midpoint * 0.3048\n  }\n  \n  return(midpoint)\n}\n\n# Prepare dataset: select columns and calculate average stream width\nnetmap_prepared &lt;- netmap_raw |&gt;\n  select(\n    OBJECTID,\n    Survey_Time_and_Date,\n    latitude1,\n    longitude1,\n    Stream_Width,\n    Stream_Width_2,\n    Stream_Width_3,\n    Stream_Width_Unit,\n    Dominant_Substrate,\n    Sub_Dominant_Substrate\n  ) |&gt;\n  rename(\n    latitude = latitude1,\n    longitude = longitude1,\n    survey_datetime = Survey_Time_and_Date,\n    width_unit = Stream_Width_Unit\n  ) |&gt;\n  rowwise() |&gt;\n  mutate(\n    # Parse each width measurement to meters\n    width_1_m = parse_width_range(Stream_Width, width_unit),\n    width_2_m = parse_width_range(Stream_Width_2, width_unit),\n    width_3_m = parse_width_range(Stream_Width_3, width_unit),\n    # Calculate average across all three measurements\n    stream_width_m = mean(c(width_1_m, width_2_m, width_3_m), na.rm = TRUE),\n    # Handle rows with all NAs (mean of no values returns NaN)\n    stream_width_m = if_else(is.nan(stream_width_m), NA_real_, stream_width_m),\n    # latitude1/longitude1 were calculated in ArcGIS Pro using the layer's\n    # geographic coordinate system (WGS 1984), not its projected display\n    # coordinate system (WGS 1984 Web Mercator, EPSG:3857)\n    crs = \"EPSG:4326 (WGS 1984), decimal degrees\"\n  ) |&gt;\n  ungroup() |&gt;\n  select(\n    OBJECTID,\n    survey_datetime,\n    latitude,\n    longitude,\n    crs,\n    stream_width_m,\n    Dominant_Substrate,\n    Sub_Dominant_Substrate\n  )\n\nnetmap_prepared\n\n\n# A tibble: 151 × 8\n   OBJECTID survey_datetime     latitude longitude crs            stream_width_m\n      &lt;int&gt; &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;                   &lt;dbl&gt;\n 1        1 2025-07-20 20:45:40     60.5     -151. EPSG:4326 (WG…          0.152\n 2        2 2025-07-20 20:45:40     60.5     -151. EPSG:4326 (WG…          0.152\n 3        3 2025-07-20 21:32:27     60.5     -151. EPSG:4326 (WG…          0.457\n 4        4 2025-07-20 21:34:55     60.5     -151. EPSG:4326 (WG…          0.914\n 5        5 2025-07-28 21:55:30     60.6     -151. EPSG:4326 (WG…          0.152\n 6        6 2025-07-28 22:29:19     60.6     -151. EPSG:4326 (WG…          0.457\n 7        7 2025-07-28 22:29:19     60.6     -151. EPSG:4326 (WG…          0.457\n 8        8 2025-07-29 22:13:55     60.6     -151. EPSG:4326 (WG…          0.152\n 9        9 2025-07-30 21:53:23     60.8     -149. EPSG:4326 (WG…          2    \n10       10 2025-07-30 19:10:45     60.8     -149. EPSG:4326 (WG…          1.52 \n# ℹ 141 more rows\n# ℹ 2 more variables: Dominant_Substrate &lt;chr&gt;, Sub_Dominant_Substrate &lt;chr&gt;\n\n\nShow code\nwrite_csv(netmap_prepared, \"data/output/netmap/netmap_stream_widths_prepared_20260925.csv\")",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>NetMap Preparation</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "7  Summary",
+    "section": "",
+    "text": "Content TK.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Summary</span>"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "King, Ryan S, Coowe M Walker, Dennis F Whigham, Steven J Baird, and\nJeffrey A Back. 2012. “Catchment Topography and Wetland\nGeomorphology Drive Macroinvertebrate Community Structure and Juvenile\nSalmonid Distributions in South-Central Alaska Headwater\nStreams.” Freshw. Sci. 31 (2): 341–64. https://doi.org/10.1899/11-109.1.\n\n\nMeyer, Benjamin E., Mark S. Wipfli, Erik R. Schoen, Daniel J. Rinella,\nand Jeffrey A. Falke. 2023. “Landscape Characteristics Influence\nProjected Growth Rates of Stream-Resident Juvenile Salmon in the Face of\nClimate Change in the Kenai River Watershed, South-Central\nAlaska.” Transactions of the American Fisheries Society\n152 (2): 169–86. https://doi.org/10.1002/tafs.10397.",
+    "crumbs": [
+      "References"
     ]
   }
 ]

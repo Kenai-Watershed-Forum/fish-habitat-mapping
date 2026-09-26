@@ -32,3 +32,19 @@ I have placed a folder at other/documents/YK_IP_Software_Release. It contains co
 into field_site_selection.qmd, i want to introduce an additional procedure. as an initial filter, i only want to include potential field site locations that are within 2 km of a road or trail. the user will need to provide a GIS file of some sort to illlustrate the locations of the roads and trails.\
 \
 help me make a plan to implement this request
+
+9/25/2026
+
+I want to add a new chapter called "NetMap Preparation" after 'Field Site Selection'. prepare this chapter, in which I will intake "data\\input\\netmap\\netmap_stream_widths_20260925.xlsx" and prepare it in a format to share with Terrainworks. prepare code that reads in this sheet, and I will be retaining only select columns, which I will code manually.
+
+Additional
+
+in netmap_prep.qmd, i want netmap_prepared to also include latitude, longitude, time, and site visit date. netmap_prepared has columns of 3 estimated stream width in ranges (e.g. 0-1) for each site. some are in ft and some are in m. for each observation (row), i want to have an average width in m. draft code to execute this.
+
+Additional2
+
+I'm still confused why lat and long are missing from some obeservations. here is the source of that same data directly from arcgis online: <https://services1.arcgis.com/UpUjUG6iQJEj7zaf/arcgis/rest/services/2025_KWF_Stream_Surveys/FeatureServer>. would it be helpful to try to download directly from there. i can provide whatever user or login credentials needed
+
+additional3
+
+lets not do the direct download from arcgis. the csv in "data\\input\\netmap" is a special layer created in ArcGIS Pro desktop in which points are snapped to either the most recent netmap line received from Terrainworks on 7/27/2026, or to a channel alignment QC line if one was drawn where a channel should have been present. the coordinates we should use are titled latitude1 and longitude1, in where i have added calculated coordinates for all points in the dataset. this dataset includes only points where channel widths were estimated in the field. update code and narrative to reflect this

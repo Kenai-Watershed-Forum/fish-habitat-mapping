@@ -1,0 +1,130 @@
+---
+title: "NetMap Preparation"
+subtitle: "Stream Width Data Processing for Terrainworks Delivery"
+author:
+  - name: "Kenai Watershed Forum"
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+rm(list = ls())
+library(tidyverse)
+library(readxl)
+```
+
+## Stream Width Survey Data
+
+Field stream width measurements were collected using an ArcGIS Field Maps mobile form and exported from an ArcGIS Online layer connected to KWF's ArcGIS Pro project map. The raw field export contains GNSS location fields that are only populated when a point is captured live using the device's GPS; points that were manually repositioned on the map do not carry those values, leaving some records without coordinates.
+
+To resolve this, a snapping layer was built in ArcGIS Pro desktop. Each survey point was snapped to the most recent NetMap stream line received from Terrainworks (delivered 7/27/2026), or to a manually drawn channel alignment QC line where a channel was present but not yet represented in the NetMap line work. Coordinates were then calculated for every snapped point and stored in the `latitude1`/`longitude1` fields. This snapping layer includes only the points where a channel width was estimated in the field, and is the file read in below. The steps that follow retain the columns needed for Terrainworks and prepare stream width data for delivery.
+
+### Read raw data
+
+```{r}
+#| label: read-data
+#| output: false
+netmap_raw <- read.csv("data/input/netmap/netmap_stream_widths_snapping_20260925.csv")
+```
+
+The file contains `r nrow(netmap_raw)` rows and `r ncol(netmap_raw)` columns. Available column names are listed below for reference.
+
+```{r}
+#| label: show-columns
+colnames(netmap_raw)
+```
+
+### Select and prepare columns
+
+Select the required columns and calculate average stream width across multiple measurements, converting all widths to meters.
+
+```{r}
+#| label: prepare-data
+# Helper function to parse range strings and convert to meters
+parse_width_range <- function(range_str, unit) {
+  if (is.na(range_str) || is.na(unit)) {
+    return(NA_real_)
+  }
+  
+  # Parse range string (e.g., "0-1" -> midpoint 0.5)
+  parts <- as.numeric(strsplit(range_str, "-")[[1]])
+  if (length(parts) != 2 || any(is.na(parts))) {
+    return(NA_real_)
+  }
+  
+  midpoint <- parts[1] + (parts[2] - parts[1]) / 2
+  
+  # Convert feet to meters if needed
+  if (tolower(unit) == "ft") {
+    midpoint <- midpoint * 0.3048
+  }
+  
+  return(midpoint)
+}
+
+# Prepare dataset: select columns and calculate average stream width
+netmap_prepared <- netmap_raw |>
+  select(
+    OBJECTID,
+    Survey_Time_and_Date,
+    latitude1,
+    longitude1,
+    Stream_Width,
+    Stream_Width_2,
+    Stream_Width_3,
+    Stream_Width_Unit,
+    Dominant_Substrate,
+    Sub_Dominant_Substrate
+  ) |>
+  rename(
+    latitude = latitude1,
+    longitude = longitude1,
+    survey_datetime = Survey_Time_and_Date,
+    width_unit = Stream_Width_Unit
+  ) |>
+  rowwise() |>
+  mutate(
+    # Parse each width measurement to meters
+    width_1_m = parse_width_range(Stream_Width, width_unit),
+    width_2_m = parse_width_range(Stream_Width_2, width_unit),
+    width_3_m = parse_width_range(Stream_Width_3, width_unit),
+    # Calculate average across all three measurements
+    stream_width_m = mean(c(width_1_m, width_2_m, width_3_m), na.rm = TRUE),
+    # Handle rows with all NAs (mean of no values returns NaN)
+    stream_width_m = if_else(is.nan(stream_width_m), NA_real_, stream_width_m),
+    # latitude1/longitude1 were calculated in ArcGIS Pro using the layer's
+    # geographic coordinate system (WGS 1984), not its projected display
+    # coordinate system (WGS 1984 Web Mercator, EPSG:3857)
+    crs = "EPSG:4326 (WGS 1984), decimal degrees"
+  ) |>
+  ungroup() |>
+  select(
+    OBJECTID,
+    survey_datetime,
+    latitude,
+    longitude,
+    crs,
+    stream_width_m,
+    Dominant_Substrate,
+    Sub_Dominant_Substrate
+  )
+
+netmap_prepared
+write_csv(netmap_prepared, "data/output/netmap/netmap_stream_widths_prepared_20260925.csv")
+
+```

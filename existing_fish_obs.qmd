@@ -751,10 +751,19 @@ xfun::embed_file(summary_csv_tmp, name = "kenai_fish_obs_summary.csv", text = "D
 ```{r echo = F}
 #| label: summary-table-render
 
-summary_df |>
-  knitr::kable(caption = "Record counts by species and source") |>
-  kableExtra::kable_styling(bootstrap_options = "striped") |>
-  kableExtra::scroll_box(width = "100%")
+summary_tbl <- summary_df |>
+  knitr::kable(caption = "Record counts by species and source")
+
+# kable_styling(bootstrap_options = ...) and scroll_box() both produce
+# raw HTML that pandoc cannot convert for non-HTML formats (e.g. docx),
+# so only apply them when rendering to HTML
+if (knitr::is_html_output()) {
+  summary_tbl <- summary_tbl |>
+    kableExtra::kable_styling(bootstrap_options = "striped") |>
+    kableExtra::scroll_box(width = "100%")
+}
+
+summary_tbl
 ```
 
 ```{r}

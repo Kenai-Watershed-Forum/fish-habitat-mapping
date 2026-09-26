@@ -1,6 +1,6 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-07-23 (removed Chapter 4, standardized code-folding, added MS Word output format with navbar download button)
+Last updated: 2026-09-25 (added NetMap Preparation chapter; fixed docx rendering errors)
 
 Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
@@ -17,12 +17,13 @@ This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habi
 | `focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. |
 | `existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** |
 | `field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. **Complete implementation with optional road/trail accessibility filter.** Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network), `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines), and optional `data/input/roads_trails/roads_trails.gpkg` (roads/trails layer). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. |
+| `netmap_prep.qmd` | NetMap Preparation — reads field-collected stream width survey data and prepares it for delivery to Terrainworks. **Working implementation; narrative prose still to be added by user.** See its own section near the bottom of this file. |
 | `summary.qmd` | Summary |
 | `references.qmd` | References |
 
-The book renders to HTML and is published via **GitHub Pages** (see Deployment section). Output goes to `docs/` (`output-dir: docs` in `_quarto.yml`).
+The book renders to HTML and is published via **GitHub Pages** (see Deployment section). Output goes to `docs/` (`output-dir: docs` in `_quarto.yml`). The book also renders to a Word (.docx) file (see MS Word output format note under Recent Updates).
 
-> **Note:** The Data Sources, Output Schema, Standardized Vocabularies, and Chunk Structure sections below pertain specifically to `existing_fish_obs.qmd`. The `field_site_selection.qmd` chapter is documented in its own section near the bottom of this file.
+> **Note:** The Data Sources, Output Schema, Standardized Vocabularies, and Chunk Structure sections below pertain specifically to `existing_fish_obs.qmd`. The `field_site_selection.qmd` and `netmap_prep.qmd` chapters are documented in their own sections near the bottom of this file.
 
 ------------------------------------------------------------------------
 
@@ -65,11 +66,18 @@ data/
     netmap/            ← NetMap stream network + GIS-derived products
                           netmap_draft.gpkg      (draft NetMap for focus HUCs)
                           awc_snapped.gpkg       (AWC obs snapped to NetMap lines)
+                          netmap_stream_widths_snapping_20260925.csv
+                            (field stream width survey export, ArcGIS Pro
+                            snapping layer; see netmap_prep.qmd section)
     focus_hucs/        ← HUC boundary polygons for stratification
   output/
     kenai_fish_obs.gpkg           ← merged harmonized fish obs (from existing_fish_obs.qmd)
+    kenai_anadromous_fish_obs.gpkg ← anadromous-species subset (from existing_fish_obs.qmd)
     field_sites/
       stratified_survey_sites.gpkg  ← sampled field sites (from field_site_selection.qmd)
+    netmap/
+      netmap_stream_widths_prepared_20260925.csv ← prepared stream widths (from netmap_prep.qmd)
+      .gitkeep    ← placeholder so this empty-at-times folder stays tracked in Git
 ```
 
 ------------------------------------------------------------------------
@@ -294,6 +302,34 @@ Each pipeline step documents both the R implementation and the equivalent ArcGIS
 
 ------------------------------------------------------------------------
 
+## netmap_prep.qmd
+
+### Purpose
+
+Reads field-collected stream width survey data (ArcGIS Field Maps mobile form export) and prepares a subset of columns, plus a calculated average stream width in meters, for delivery to Terrainworks. Working implementation as of 2026-09-25; narrative prose to be filled in by the user.
+
+### Input
+
+`data/input/netmap/netmap_stream_widths_snapping_20260925.csv` — an ArcGIS Pro-built snapping layer, not the raw field export. Each survey point in the raw export was snapped to either the current Terrainworks NetMap line (delivered 7/27/2026) or a manually drawn channel alignment QC line, and coordinates were recalculated into `latitude1`/`longitude1` fields for every point. This layer includes only points where a channel width was estimated in the field (151 rows).
+
+**Why the snapping layer, not the raw export:** the raw ArcGIS Online field export's GNSS metadata fields (`esrignss_latitude`/`esrignss_longitude`) are populated only when a point is captured live via the device's GPS; points manually repositioned on the map leave those fields blank (16 of 151 raw records were affected). The point geometry itself is always present in the source feature service, so the snapping layer's recalculated `latitude1`/`longitude1` fields have zero missing coordinates. Confirmed via direct query of the ArcGIS Online feature service (`2025_KWF_Stream_Surveys/FeatureServer`, publicly queryable, no login required) that geometry exists for records missing GNSS attribute values.
+
+### Output
+
+`data/output/netmap/netmap_stream_widths_prepared_20260925.csv` — selected columns: `OBJECTID`, `survey_datetime`, `latitude`, `longitude`, `crs`, `stream_width_m`, `Dominant_Substrate`, `Sub_Dominant_Substrate`.
+
+### Processing logic
+
+- **Coordinates:** `latitude1`/`longitude1` (renamed `latitude`/`longitude`) are the layer's Geographic Coordinate System values (WGS 1984 / EPSG:4326), distinct from the layer's Web Mercator (EPSG:3857) display projection. A `crs` column records this as `"EPSG:4326 (WGS 1984), decimal degrees"` for downstream users.
+- **Stream width:** the raw data has up to three width measurements per site (`Stream_Width`, `Stream_Width_2`, `Stream_Width_3`), recorded as range strings (e.g. `"0-1"`) with a shared unit field (`Stream_Width_Unit`, `ft` or `m`). A helper function `parse_width_range()` takes the midpoint of each range and converts feet to meters (× 0.3048) as needed; `stream_width_m` is the mean of the (up to three) converted values per row, ignoring `NA`s.
+- **Environment:** the setup chunk begins with `rm(list = ls())` to clear the R environment on each render.
+
+### Known limitations
+
+- `data/output/netmap/` is an otherwise-empty folder; Git does not track empty directories, so a `.gitkeep` placeholder was added to keep it from disappearing from the working tree. If this folder vanishes again, recreate it before rendering.
+
+------------------------------------------------------------------------
+
 ## YK_IP Software Release
 
 ### Location
@@ -335,7 +371,24 @@ The end products — RCAs and per-reach valley bottom width — are key landscap
 
 ------------------------------------------------------------------------
 
-## Recent Updates (2026-07-23)
+## Recent Updates (2026-09-25)
+
+### New chapter: NetMap Preparation
+
+Added `netmap_prep.qmd` as a new chapter after `field_site_selection.qmd` (registered in `_quarto.yml`). See the dedicated `netmap_prep.qmd` section above for full details on inputs, outputs, and processing logic.
+
+### Docx rendering bug fixes
+
+A full `quarto render` of the book (needed once the new chapter was added) surfaced two pre-existing, unrelated bugs that blocked the Word (docx) output:
+
+1. **`existing_fish_obs.qmd` — raw HTML in docx target.** The `summary-table-render` chunk's `kableExtra::kable_styling(bootstrap_options = "striped")` and `scroll_box()` calls both force literal HTML (Bootstrap CSS classes and a scrolling `<div>` only make sense in HTML), which Pandoc cannot embed in a `.docx` file. This was **not** a leaflet/htmlwidget problem — installing `webshot2` did not fix it, since `kable_styling()`/`scroll_box()` output is raw HTML text, not a screenshot-able htmlwidget. Fixed by wrapping both calls in `if (knitr::is_html_output())`, so the docx version falls back to a plain `knitr::kable()` table.
+2. **`netmap_prep.qmd` — missing output folder.** `data/output/netmap/` did not exist at render time (Git does not track empty directories), causing `write_csv()` to fail. Recreated the folder with a `.gitkeep` placeholder.
+
+`webshot2` is now installed in the project R environment and remains useful for genuine htmlwidget-in-docx cases (e.g. if a leaflet map is ever needed in the Word output), even though it was not the fix for either bug above.
+
+------------------------------------------------------------------------
+
+## Previous Updates (2026-07-23)
 
 ### Chapter removals and restructuring
 
@@ -388,4 +441,5 @@ The book is published via GitHub Pages. Rendered output goes to `docs/` (`output
 - **Never commit raw multi-file formats** (shapefiles, GDBs) — always use single-file GeoPackages.
 - If adding a new large data source, save a pre-processed GeoPackage to `data/input/fish_obs/<source>/`, archive raw processing in an `eval: false` chunk, and read from the GeoPackage in the active chunk.
 - `data/input/fish_obs/lookups/` CSV files must be included in the repo — they are read at render time.
-- `data/output/` contains `kenai_fish_obs.gpkg` (from `existing_fish_obs.qmd`) and `field_sites/stratified_survey_sites.gpkg` (from `field_site_selection.qmd`).
+- `data/output/` contains `kenai_fish_obs.gpkg` and `kenai_anadromous_fish_obs.gpkg` (from `existing_fish_obs.qmd`), `field_sites/stratified_survey_sites.gpkg` (from `field_site_selection.qmd`), and `netmap/netmap_stream_widths_prepared_20260925.csv` (from `netmap_prep.qmd`).
+- Empty output subfolders (e.g. `data/output/netmap/`) need a `.gitkeep` placeholder file, or Git will silently drop them from the working tree since it does not track empty directories.
