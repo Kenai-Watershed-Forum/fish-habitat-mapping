@@ -1,0 +1,22 @@
+---
+title: "ArcGIS Online Data Intake"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+---
+
+Content TK. This chapter will document a direct data intake from ArcGIS Online feature services (rather than downloaded Field Maps CSV exports), feeding multiple downstream chapters including New Fish Observations and, eventually, NetMap Preparation.

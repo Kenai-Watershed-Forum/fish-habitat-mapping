@@ -94,7 +94,7 @@ Three spatial inputs are required:
 |------------------------|------------------------|------------------------|
 | Draft NetMap stream network | `data/input/netmap/netmap_draft.gpkg` | NetMap channel reaches for project focus HUCs |
 | Snapped AWC fish observations | `data/input/netmap/awc_snapped.gpkg` | AWC fish presence points snapped to NetMap lines in ArcGIS Pro |
-| Focus HUC boundaries | `data/input/focus_hucs/focus_hucs.gpkg` | Watershed polygons used for landscape stratification ([Chapter 2](focus_areas.qmd)) |
+| Focus HUC boundaries | `data/input/focus_hucs/focus_hucs.gpkg` | Watershed polygons used for landscape stratification (see the [Project Focus Areas](focus_areas.qmd) chapter) |
 
 The NetMap layer must include at minimum:
 
@@ -141,7 +141,7 @@ Because the fish points have been snapped to the NetMap lines, each point sits o
 ::: callout-note
 #### Classification and branching networks
 
-The `OUT_DIST` approach correctly identifies the most-upstream fish observation across the entire network, but labels all reaches above that threshold as `"Unknown"` regardless of which tributary they are on. In a branching network, reaches on tributaries that have never been surveyed are labeled `"Unknown"`, which is the right call for field planning. Reaches on a different branch than the most-upstream observation may be labeled `"Present"` when they are arguably untested; the ArcGIS Pro Trace Network approach described in [Chapter 4](fish_status.qmd) handles this more rigorously.
+The `OUT_DIST` approach correctly identifies the most-upstream fish observation across the entire network, but labels all reaches above that threshold as `"Unknown"` regardless of which tributary they are on. In a branching network, reaches on tributaries that have never been surveyed are labeled `"Unknown"`, which is the right call for field planning. Reaches on a different branch than the most-upstream observation may be labeled `"Present"` when they are arguably untested; an ArcGIS Pro Trace Network approach would handle this more rigorously but has not yet been implemented in this book.
 :::
 
 ```{r}

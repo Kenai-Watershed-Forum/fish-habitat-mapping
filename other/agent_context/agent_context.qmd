@@ -48,3 +48,45 @@ I'm still confused why lat and long are missing from some obeservations. here is
 additional3
 
 lets not do the direct download from arcgis. the csv in "data\\input\\netmap" is a special layer created in ArcGIS Pro desktop in which points are snapped to either the most recent netmap line received from Terrainworks on 7/27/2026, or to a channel alignment QC line if one was drawn where a channel should have been present. the coordinates we should use are titled latitude1 and longitude1, in where i have added calculated coordinates for all points in the dataset. this dataset includes only points where channel widths were estimated in the field. update code and narrative to reflect this
+
+10/14/2026
+
+New goals to include in this project:
+
+- reorganize book strcuture to include chapters and sub-chapters. generally the structure of the overall book should be that of a scientific report, proceeding as
+
+  - Preface
+
+  - Introduction
+
+  - Acknowledgements
+
+  - Methods (each as its own qmd)
+
+    - Geographic Data
+
+      - Project focus areas
+
+      - Field Site Selection
+
+      - Netmap Preparation
+
+      - other chapters tbd
+
+    - Fish Habitat Data
+
+      - New Fish Observations
+
+      - Existing Fish Observations
+
+      - other chapters tbd
+
+    - Other sections tbd
+
+  - Results
+
+  - Discussion
+
+  - References
+
+For the "new fish observations," i want to look in to developing a direct data intake from my arcgis online account, rather than accessing Field Maps data as a downloaded csv, as i am now in the netmap_prep.qmd example. (netmap_prep.qmd will ideally pull directly from arcgis online eventually as well)

@@ -18,7 +18,7 @@ execute:
   message: false
   warning: false
 editor: visual
-bibliography: references.bib
+bibliography: ../../references.bib
 ---
 
 ```{r}

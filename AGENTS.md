@@ -1,6 +1,6 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-09-25 (added NetMap Preparation chapter; fixed docx rendering errors)
+Last updated: 2026-10-14 (reorganized book into chapters/geographic_data/ and chapters/fish_habitat_data/ parts, per scientific-report structure)
 
 Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
@@ -12,18 +12,24 @@ This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habi
 
 | File | Status |
 |----|----|
-| `index.qmd` | Preface / landing page (placeholder) |
-| `intro.qmd` | Introduction |
-| `focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. |
-| `existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** |
-| `field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. **Complete implementation with optional road/trail accessibility filter.** Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network), `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines), and optional `data/input/roads_trails/roads_trails.gpkg` (roads/trails layer). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. |
-| `netmap_prep.qmd` | NetMap Preparation — reads field-collected stream width survey data and prepares it for delivery to Terrainworks. **Working implementation; narrative prose still to be added by user.** See its own section near the bottom of this file. |
-| `summary.qmd` | Summary |
-| `references.qmd` | References |
+| `index.qmd` | Preface / landing page (placeholder). Stays at the project root — Quarto requires the book's home page to live outside any subfolder. |
+| `chapters/intro.qmd` | Introduction |
+| `chapters/acknowledgements.qmd` | Acknowledgements — placeholder (content TK) |
+| `chapters/arcgis_data_intake.qmd` | ArcGIS Online Data Intake — placeholder (content TK). Standalone top-level chapter (not inside either part) since the data it will ingest feeds multiple downstream chapters (New Fish Observations, and eventually NetMap Preparation). |
+| `chapters/geographic_data/focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. Part of the **Methods - Geographic Data** part. |
+| `chapters/fish_habitat_data/existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** Part of the **Methods - Fish Habitat Data** part. |
+| `chapters/geographic_data/field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. **Complete implementation with optional road/trail accessibility filter.** Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network), `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines), and optional `data/input/roads_trails/roads_trails.gpkg` (roads/trails layer). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. Part of the **Methods - Geographic Data** part. |
+| `chapters/geographic_data/netmap_prep.qmd` | NetMap Preparation — reads field-collected stream width survey data and prepares it for delivery to Terrainworks. **Working implementation; narrative prose still to be added by user.** See its own section near the bottom of this file. Part of the **Methods - Geographic Data** part. |
+| `chapters/fish_habitat_data/new_fish_obs.qmd` | New Fish Observations — placeholder (content TK). Will draw on the ArcGIS Online Data Intake chapter. Part of the **Methods - Fish Habitat Data** part. |
+| `chapters/results.qmd` | Results — placeholder (content TK) |
+| `chapters/discussion.qmd` | Discussion — placeholder (content TK) |
+| `chapters/references.qmd` | References |
 
 The book renders to HTML and is published via **GitHub Pages** (see Deployment section). Output goes to `docs/` (`output-dir: docs` in `_quarto.yml`). The book also renders to a Word (.docx) file (see MS Word output format note under Recent Updates).
 
-> **Note:** The Data Sources, Output Schema, Standardized Vocabularies, and Chunk Structure sections below pertain specifically to `existing_fish_obs.qmd`. The `field_site_selection.qmd` and `netmap_prep.qmd` chapters are documented in their own sections near the bottom of this file.
+**Book structure / parts:** `_quarto.yml`'s `book.chapters` list uses Quarto's `part:` syntax to group chapters into two sidebar sections, "Methods - Geographic Data" and "Methods - Fish Habitat Data". Quarto books do not support nested parts (a part cannot itself contain sub-parts), so these are top-level parts with "Methods - " baked into the label text rather than a literal nested "Methods" sidebar entry. They sit between the standalone ArcGIS Online Data Intake chapter and the Results chapter in the chapter list. `execute-dir: project` (set under the `project:` key) means every chapter's R chunks execute with the project root as the working directory regardless of how deep the chapter file lives in subfolders, so existing `data/input/...` / `data/output/...` relative paths in chunk code did not need to change. Chapters with their own `bibliography:` front matter (`focus_areas.qmd`, `existing_fish_obs.qmd`) point to `../../references.bib` (two levels up, since they now live in `chapters/geographic_data/` or `chapters/fish_habitat_data/`). The `chapters/arcgis_data_intake.qmd` chapter is a standalone top-level chapter (outside both parts) because the ArcGIS Online data it will ingest feeds multiple downstream chapters across both themes, not just one.
+
+> **Note:** The Data Sources, Output Schema, Standardized Vocabularies, and Chunk Structure sections below pertain specifically to `chapters/fish_habitat_data/existing_fish_obs.qmd`. The `chapters/geographic_data/field_site_selection.qmd` and `chapters/geographic_data/netmap_prep.qmd` chapters are documented in their own sections near the bottom of this file.
 
 ------------------------------------------------------------------------
 
@@ -236,6 +242,8 @@ Note: the AFFI section uses `%>%` (magrittr pipe) in places due to its ChatGPT-g
 
 ## field_site_selection.qmd
 
+Path: `chapters/geographic_data/field_site_selection.qmd`
+
 ### Purpose
 
 Generates candidate field survey sites for the Last Fish Observed (LFO) method using a stratified proportional random sampling design. **Complete implementation with optional road/trail accessibility filter.** Takes GIS inputs prepared in ArcGIS Pro and performs all classification, filtering, and sampling in R. All chunks are `eval: false` pending the GIS input files.
@@ -304,6 +312,8 @@ Each pipeline step documents both the R implementation and the equivalent ArcGIS
 
 ## netmap_prep.qmd
 
+Path: `chapters/geographic_data/netmap_prep.qmd`
+
 ### Purpose
 
 Reads field-collected stream width survey data (ArcGIS Field Maps mobile form export) and prepares a subset of columns, plus a calculated average stream width in meters, for delivery to Terrainworks. Working implementation as of 2026-09-25; narrative prose to be filled in by the user.
@@ -354,7 +364,7 @@ Seven Jupyter notebook files (`.ipynb`) containing ArcPy code designed to run in
 
 ### Relevance to this project
 
-The end products — RCAs and per-reach valley bottom width — are key landscape habitat attributes used in salmon End-of-Anadromy (EoA) and End-of-Fish (EoF) spatial models, which are the eventual modeling goal of `fish_status.qmd`. The Kenai project already uses NetMap stream networks (same input format). IFSAR DEM is available for the Kenai Peninsula from the same source (USGS National Map). The scripts are geographically adaptable — all file paths and GDB names are user-supplied at the top of each notebook.
+The end products — RCAs and per-reach valley bottom width — are key landscape habitat attributes used in salmon End-of-Anadromy (EoA) and End-of-Fish (EoF) spatial models, the eventual modeling goal of this project. The Kenai project already uses NetMap stream networks (same input format). IFSAR DEM is available for the Kenai Peninsula from the same source (USGS National Map). The scripts are geographically adaptable — all file paths and GDB names are user-supplied at the top of each notebook.
 
 ### Planned approach
 
@@ -368,6 +378,27 @@ The end products — RCAs and per-reach valley bottom width — are key landscap
 - Input NetMap data for the YK project used `.gdb` format; the Kenai project currently stores NetMap in `.gpkg`. ArcPy can read `.gpkg` files, but the scripts assume `.gdb` workspace environments — this will need to be reconciled.
 - IFSAR DEM source: https://apps.nationalmap.gov/downloader/ (5m DSM tiles; see IP 4 for details).
 - Outputs from this pipeline would likely be stored in `data/input/netmap/` once produced, as reach-level habitat attributes to join to the NetMap network.
+
+------------------------------------------------------------------------
+
+## Recent Updates (2026-10-14)
+
+### Chapter/subchapter reorganization
+
+Restructured the book into a scientific-report layout per the user's 2026-10-14 agent context notes (Preface, Introduction, Acknowledgements, Methods grouped by theme, Results, Discussion, References):
+
+- Moved `focus_areas.qmd`, `field_site_selection.qmd`, and `netmap_prep.qmd` into `chapters/geographic_data/`.
+- Moved `existing_fish_obs.qmd` (and its `existing_fish_obs_files/` figure asset folder, used for docx figure output) into `chapters/fish_habitat_data/`.
+- `_quarto.yml`'s `book.chapters` list now groups those two folders under `part: "Methods - Geographic Data"` and `part: "Methods - Fish Habitat Data"`. Quarto books cannot nest parts, so there is no literal "Methods" sidebar entry on its own — the user chose to bake "Methods - " into each part's label text instead, so the two theme parts sit at the top level of the chapter list.
+- Added four new placeholder chapters (title + "Content TK.", matching the existing `summary.qmd` pattern that was removed): `chapters/acknowledgements.qmd`, `chapters/results.qmd`, `chapters/discussion.qmd`, and `chapters/fish_habitat_data/new_fish_obs.qmd` (a future chapter for newly collected fish observation data, including a planned direct ArcGIS Online intake).
+- Deleted `chapters/summary.qmd` (superseded by the new separate Results and Discussion chapters) and the orphaned root-level `fish_status.qmd` (removed from the book back in July 2026 but never deleted from disk).
+- Updated `bibliography:` front matter in `focus_areas.qmd` and `existing_fish_obs.qmd` from `../references.bib` to `../../references.bib` to account for the extra folder depth.
+- Fixed two stale cross-chapter links in `field_site_selection.qmd`: the hardcoded `[Chapter 2](focus_areas.qmd)` label (chapter numbers shift once parts are introduced, so this is now a plain, un-numbered link) and the dangling `[Chapter 4](fish_status.qmd)` reference (rewritten as prose noting the ArcGIS Pro Trace Network approach as a planned future enhancement, since no chapter anywhere implements it).
+- Full `quarto render` (HTML + docx) confirmed successful after the move; the part headers render correctly in the HTML sidebar.
+
+### Standalone ArcGIS Online Data Intake chapter
+
+Added `chapters/arcgis_data_intake.qmd` as a new standalone, top-level placeholder chapter (title + "Content TK."), positioned right after Acknowledgements and before the two Methods parts. The user requested this separation because the ArcGIS Online feature-service intake it will document is shared infrastructure feeding multiple downstream chapters (New Fish Observations today, and eventually NetMap Preparation, which currently reads a downloaded Field Maps CSV export instead of a live feed) rather than being specific to one theme. Updated `chapters/fish_habitat_data/new_fish_obs.qmd`'s placeholder text to reference this new chapter instead of describing the intake itself.
 
 ------------------------------------------------------------------------
 

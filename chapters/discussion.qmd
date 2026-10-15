@@ -1,11 +1,11 @@
 ---
-title: "Summary"
+title: "Discussion"
 author:
   - name: Kenai Watershed Forum
     email: ben@kenaiwatershed.org
 date: last-modified
 date-format: "MMMM D, YYYY"
-format: 
+format:
   html:
     code-fold: true
     code-summary: "Show code"

@@ -1,0 +1,22 @@
+---
+title: "New Fish Observations"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+---
+
+Content TK. This chapter will cover newly collected fish observation data gathered during the current project, drawing on the direct ArcGIS Online data intake described in the [ArcGIS Online Data Intake](../arcgis_data_intake.qmd) chapter.
