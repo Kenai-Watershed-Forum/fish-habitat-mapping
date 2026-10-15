@@ -1,6 +1,7 @@
 project:
   type: book
   output-dir: docs
+  execute-dir: project
 
 book:
   title: "fish-habitat-mapping"
@@ -9,12 +10,21 @@ book:
   date: today
   chapters:
     - index.qmd
-    - intro.qmd
-    - focus_areas.qmd
-    - existing_fish_obs.qmd
-    - field_site_selection.qmd
-    - summary.qmd
-    - references.qmd
+    - chapters/intro.qmd
+    - chapters/acknowledgements.qmd
+    - chapters/arcgis_data_intake.qmd
+    - part: "Methods - Geographic Data"
+      chapters:
+        - chapters/geographic_data/focus_areas.qmd
+        - chapters/geographic_data/field_site_selection.qmd
+        - chapters/geographic_data/netmap_prep.qmd
+    - part: "Methods - Fish Habitat Data"
+      chapters:
+        - chapters/fish_habitat_data/new_fish_obs.qmd
+        - chapters/fish_habitat_data/existing_fish_obs.qmd
+    - chapters/results.qmd
+    - chapters/discussion.qmd
+    - chapters/references.qmd
 
 bibliography: references.bib
 
@@ -36,4 +46,3 @@ format:
 #    documentclass: scrreprt
 
 editor: visual
-

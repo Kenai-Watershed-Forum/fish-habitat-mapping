@@ -1,0 +1,46 @@
+---
+title: "Project Focus Areas"
+author:
+  - name: Kenai Watershed Forum
+    email: ben@kenaiwatershed.org
+date: last-modified
+date-format: "MMMM D, YYYY"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show code"
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    toc-title: "Contents"
+    number-sections: true
+execute:
+  message: false
+  warning: false
+editor: visual
+bibliography: ../../references.bib
+---
+
+```{r}
+#| include: false
+# clear environment
+rm(list=ls())
+
+# load packages
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(stringr)
+library(lubridate)
+library(sf)
+library(xfun)
+```
+
+This chapter presents the extents of currently active project areas.
+
+See the PDF linked below for a description of the focus HUCs as of July 2026:
+
+```{r echo = F}
+xfun::embed_file("other/documents/NCRF 2026 Scope of Work Revision Request.pdf", text = "Memo with Kenai Focus HUC Details")
+
+```
