@@ -1,6 +1,6 @@
 # Kenai-EoA Agent Context
 
-Last updated: 2026-10-14 (reorganized book into chapters/geographic_data/ and chapters/fish_habitat_data/ parts, per scientific-report structure)
+Last updated: 2026-10-30 (drafted arcgis_data_intake.qmd with dated snapshot, exclusion CSV and map; open work recorded below)
 
 Agent context file: `other/agent_context/agent_context.qmd` (plain text notes from the user; check for task context before starting new work).
 
@@ -15,7 +15,7 @@ This is a **Quarto book** (`_quarto.yml`, `type: book`) that documents fish habi
 | `index.qmd` | Preface / landing page (placeholder). Stays at the project root — Quarto requires the book's home page to live outside any subfolder. |
 | `chapters/intro.qmd` | Introduction |
 | `chapters/acknowledgements.qmd` | Acknowledgements — placeholder (content TK) |
-| `chapters/arcgis_data_intake.qmd` | ArcGIS Online Data Intake — placeholder (content TK). Standalone top-level chapter (not inside either part) since the data it will ingest feeds multiple downstream chapters (New Fish Observations, and eventually NetMap Preparation). |
+| `chapters/arcgis_data_intake.qmd` | ArcGIS Online Data Intake — drafted and working (see Open Work section): reads the KWF feature service, saves a dated snapshot, applies a manual exclusion CSV, writes a filtered GeoPackage. Standalone top-level chapter (not inside either part) since its data feeds multiple downstream chapters (New Fish Observations, existing fish obs, and eventually NetMap Preparation). |
 | `chapters/geographic_data/focus_areas.qmd` | Project Focus Areas — planned content: leaflet map of project HUCs, shapefile download, description/justification. Early draft, no analysis code yet. Part of the **Methods - Geographic Data** part. |
 | `chapters/fish_habitat_data/existing_fish_obs.qmd` | Existing fish observations — compiles and harmonizes freshwater fish observation data to support EoA and End of Fish modeling. **Complete through Merged Dataset section.** Part of the **Methods - Fish Habitat Data** part. |
 | `chapters/geographic_data/field_site_selection.qmd` | Field Site Selection — stratified proportional random sampling of candidate survey sites for Last Fish Observed (LFO) field surveys. **Complete implementation with optional road/trail accessibility filter.** Inputs: `data/input/netmap/netmap_draft.gpkg` (draft NetMap stream network), `data/input/netmap/awc_snapped.gpkg` (AWC fish obs snapped to NetMap lines), and optional `data/input/roads_trails/roads_trails.gpkg` (roads/trails layer). All chunks `eval: false` pending GIS inputs. Each step documents the equivalent ArcGIS Pro workflow alongside the R implementation. Part of the **Methods - Geographic Data** part. |
@@ -76,6 +76,10 @@ data/
                             (field stream width survey export, ArcGIS Pro
                             snapping layer; see netmap_prep.qmd section)
     focus_hucs/        ← HUC boundary polygons for stratification
+    arcgis_online/     ← written by arcgis_data_intake.qmd: dated KWF snapshot
+                          (kwf_stream_surveys_20261030.gpkg, EPSG:4326),
+                          excluded_points.csv (hand-edited OBJECTID list), and
+                          kwf_stream_surveys_20261030_filtered.gpkg (created at render)
   output/
     kenai_fish_obs.gpkg           ← merged harmonized fish obs (from existing_fish_obs.qmd)
     kenai_anadromous_fish_obs.gpkg ← anadromous-species subset (from existing_fish_obs.qmd)
@@ -378,6 +382,34 @@ The end products — RCAs and per-reach valley bottom width — are key landscap
 - Input NetMap data for the YK project used `.gdb` format; the Kenai project currently stores NetMap in `.gpkg`. ArcPy can read `.gpkg` files, but the scripts assume `.gdb` workspace environments — this will need to be reconciled.
 - IFSAR DEM source: https://apps.nationalmap.gov/downloader/ (5m DSM tiles; see IP 4 for details).
 - Outputs from this pipeline would likely be stored in `data/input/netmap/` once produced, as reach-level habitat attributes to join to the NetMap network.
+
+------------------------------------------------------------------------
+
+## Open Work and Notes (2026-10-30)
+
+### arcgis_data_intake.qmd (drafted, working)
+
+Path: `chapters/arcgis_data_intake.qmd`. Reads the public KWF feature service (`2025_KWF_Stream_Surveys/FeatureServer/0`) with `arcgislayers`, transforms to EPSG:4326, and saves a dated snapshot `data/input/arcgis_online/kwf_stream_surveys_20261030.gpkg` (444 records). Points listed by `OBJECTID` in `data/input/arcgis_online/excluded_points.csv` (columns `OBJECTID`, `reason`, `date_excluded`; currently empty) are dropped, and the result is written to `data/input/arcgis_online/kwf_stream_surveys_20261030_filtered.gpkg`. A leaflet map shows kept and excluded points with their `OBJECTID`. The filtered file is created when the chapter renders (it does not exist until then). Not yet verified with a full `quarto render`; code was tested chunk by chunk in the R console.
+
+User intent: all other chapters should use the filtered GeoPackage, not the raw snapshot.
+
+### Pending: switch existing_fish_obs.qmd to the filtered snapshot
+
+Not yet done. The KWF 2025 block (`kwf-process` chunk) still reads `data/input/fish_obs/kwf/2025_fish_survey_data.xlsx` (64 rows, OBJECTID 1-64). The snapshot has 444 records (the extra 380 are 2025-10 to 2026-10 surveys). Findings from comparing the two:
+
+- OBJECTIDs 1-64 match between Excel and snapshot; fish counts agree; `OBJECTID` 21 differs (Excel "None", snapshot "Salvelinus sp."). `GlobalID` values differ everywhere. The Excel `date` column equals `as.Date()` of the snapshot's UTC `Survey_Time_and_Date` (100% match); Alaska local date would differ for about 3% of records.
+- Snapshot `Latitude`/`Longitude` attributes are empty; take coordinates from the geometry.
+- Proposed changes (awaiting user confirmation): read the filtered gpkg; `source = paste0("KWF_", year)`; `siteID = paste0(year, "_", OBJECTID)`; keep UTC dates; have the intake chapter also write an undated `kwf_stream_surveys_filtered.gpkg` that all chapters read; add new species to the 2025 lookup.
+- Species in the snapshot missing from `species_lookup_kwf_2025`: Pungitius pungitius, Gasterosteus aculeatus, Oncorhynchus nerka, Cottus cognatus, Dallia pectoralis, Lampetra sp. (lamprey sp.), Osmerus mordax (rainbow smelt), Salvelinus sp. (char sp.), Rana sylvatica (exclude as non-fish), and "Semelparous Oncorhynchus sp." (2 records, no mapping decided). Life stage "tadpole" (7 records, wood frog) is also new.
+- User will repair data issues in the species names directly in ArcGIS Online, so re-check the species list after a snapshot refresh before finalizing the lookup.
+
+### Pending: netmap_prep.qmd exclusions
+
+Not done. `data/input/netmap/netmap_stream_widths_snapping_20260925.csv` has its own `OBJECTID` (1-161) and `GlobalID` values that do NOT match the live service (about 20% of widths agree on OBJECTID join; no GlobalID overlap). The service `OBJECTID` exclusion list therefore cannot be applied to the snapping CSV. Options: (a) separate exclusion list keyed to the CSV's own OBJECTIDs, or (b) rebuild the snapping layer from the service snapshot in ArcGIS Pro so IDs match (preferred by the agent).
+
+### Note on editing this repo
+
+The `edit` tool corrupted `chapters/arcgis_data_intake.qmd` (merged text into the YAML closing `---`) even for a single-line replacement. After any edit, re-read the file; use a full `write` rewrite if something looks wrong.
 
 ------------------------------------------------------------------------
 

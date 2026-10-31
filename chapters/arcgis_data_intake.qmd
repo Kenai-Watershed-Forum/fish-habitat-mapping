@@ -19,4 +19,164 @@ execute:
   warning: false
 ---
 
-Content TK. This chapter will document a direct data intake from ArcGIS Online feature services (rather than downloaded Field Maps CSV exports), feeding multiple downstream chapters including New Fish Observations and, eventually, NetMap Preparation.
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(sf)
+library(arcgislayers)
+library(leaflet)
+```
+
+Field survey data are collected with ArcGIS Field Maps and hosted as a feature service on ArcGIS Online. The service is publicly queryable, so no login or token is needed to read it. This chapter reads the service directly into R and saves a dated local snapshot, which later chapters use as their input.
+
+## Feature service
+
+The KWF stream survey data are hosted at the URL below. The service is a single point layer. The server returns at most 2,000 records per request; `arc_select()` pages through the results automatically.
+
+```{r}
+#| label: parameters
+#| output: false
+
+# URL of layer 0 of the hosted feature service
+SERVICE_URL <- "https://services1.arcgis.com/UpUjUG6iQJEj7zaf/arcgis/rest/services/2025_KWF_Stream_Surveys/FeatureServer/0"
+
+# Snapshot file. Change the date only when deliberately pulling fresh data.
+SNAPSHOT_DATE <- "20261030"
+SNAPSHOT_PATH <- file.path("data", "input", "arcgis_online",
+                           paste0("kwf_stream_surveys_", SNAPSHOT_DATE, ".gpkg"))
+
+# Snapshot with manually excluded points removed (read by other chapters)
+FILTERED_PATH <- file.path("data", "input", "arcgis_online",
+                           paste0("kwf_stream_surveys_", SNAPSHOT_DATE, "_filtered.gpkg"))
+
+# CSV listing points to exclude (edit by hand)
+EXCLUDE_PATH <- file.path("data", "input", "arcgis_online", "excluded_points.csv")
+
+# Set to TRUE to re-download and overwrite the snapshot for SNAPSHOT_DATE
+REFRESH_SNAPSHOT <- FALSE
+```
+
+## Read and save a snapshot
+
+If the snapshot for `SNAPSHOT_DATE` does not exist yet (or `REFRESH_SNAPSHOT` is `TRUE`), the chunk below downloads all features from the service, transforms them from the service's Web Mercator projection (EPSG:3857) to WGS 84 (EPSG:4326), and writes a GeoPackage. Otherwise the existing snapshot is read, so rendering the book does not depend on an internet connection or on the live data staying unchanged.
+
+```{r}
+#| label: read-service
+#| output: false
+
+if (!file.exists(SNAPSHOT_PATH) || REFRESH_SNAPSHOT) {
+  dir.create(dirname(SNAPSHOT_PATH), recursive = TRUE, showWarnings = FALSE)
+
+  kwf_surveys <- arc_open(SERVICE_URL) |>
+    arc_select() |>
+    st_transform(4326)
+
+  st_write(kwf_surveys, SNAPSHOT_PATH, delete_dsn = TRUE, quiet = TRUE)
+}
+
+kwf_surveys <- st_read(SNAPSHOT_PATH, quiet = TRUE)
+```
+
+## Snapshot summary
+
+```{r}
+#| label: snapshot-summary
+
+tibble(
+  snapshot         = basename(SNAPSHOT_PATH),
+  n_records        = nrow(kwf_surveys),
+  n_columns        = ncol(kwf_surveys) - 1,
+  missing_geometry = sum(st_is_empty(kwf_surveys)),
+  first_survey     = as.Date(min(kwf_surveys$Survey_Time_and_Date, na.rm = TRUE)),
+  last_survey      = as.Date(max(kwf_surveys$Survey_Time_and_Date, na.rm = TRUE)),
+  missing_gnss_lat = sum(is.na(kwf_surveys$esrignss_latitude))
+) |>
+  pivot_longer(everything(), names_to = "item", values_to = "value", values_transform = as.character) |>
+  knitr::kable()
+```
+
+The `esrignss_latitude` and `esrignss_longitude` attribute fields are populated only when a point was captured live from the device GNSS receiver. Points repositioned manually on the map have blank values in those fields but still have point geometry, so coordinates should be taken from the geometry rather than from the GNSS attributes.
+
+## Excluding points
+
+Some survey points need to be left out of later analyses. Excluded points are listed by `OBJECTID` in `data/input/arcgis_online/excluded_points.csv`, which has three columns: `OBJECTID`, `reason`, and `date_excluded`. To exclude a point, find its `OBJECTID` on the map below (hover or click the point), add a row to the CSV, and re-render. The snapshot itself is never modified, so removing a row from the CSV restores the point.
+
+```{r}
+#| label: apply-exclusions
+#| output: false
+
+excluded <- read_csv(
+  EXCLUDE_PATH,
+  col_types = cols(OBJECTID = col_integer(), reason = col_character(), date_excluded = col_character())
+)
+
+# IDs in the CSV that are not in the snapshot (typos, or removed from the service)
+unmatched_ids <- excluded |>
+  filter(!OBJECTID %in% kwf_surveys$OBJECTID)
+
+kwf_surveys <- kwf_surveys |>
+  mutate(excluded = OBJECTID %in% excluded$OBJECTID)
+
+kwf_surveys_filtered <- kwf_surveys |>
+  filter(!excluded) |>
+  select(-excluded)
+
+st_write(kwf_surveys_filtered, FILTERED_PATH, delete_dsn = TRUE, quiet = TRUE)
+```
+
+```{r}
+#| label: exclusion-counts
+
+tibble(
+  records_in_snapshot = nrow(kwf_surveys),
+  records_excluded    = sum(kwf_surveys$excluded),
+  records_kept        = nrow(kwf_surveys_filtered)
+) |>
+  knitr::kable()
+```
+
+```{r}
+#| label: unmatched-ids
+
+if (nrow(unmatched_ids) > 0) {
+  cat("These OBJECTIDs in excluded_points.csv were not found in the snapshot:\n")
+  knitr::kable(unmatched_ids)
+}
+```
+
+```{r}
+#| label: exclusion-map
+
+map_pts <- kwf_surveys |>
+  left_join(select(excluded, OBJECTID, reason), by = "OBJECTID") |>
+  mutate(
+    survey_date = as.Date(Survey_Time_and_Date),
+    status      = if_else(excluded, "Excluded", "Kept"),
+    label_text  = paste0("OBJECTID ", OBJECTID, " | ", survey_date),
+    popup_text  = paste0(
+      "<b>OBJECTID:</b> ", OBJECTID,
+      "<br><b>GlobalID:</b> ", GlobalID,
+      "<br><b>Survey date:</b> ", survey_date,
+      "<br><b>Fish present:</b> ", Fish_present,
+      "<br><b>Status:</b> ", status,
+      if_else(is.na(reason), "", paste0("<br><b>Reason:</b> ", reason))
+    )
+  )
+
+pal <- colorFactor(c("Excluded" = "red", "Kept" = "steelblue"), domain = c("Excluded", "Kept"))
+
+leaflet(map_pts) |>
+  addProviderTiles("Esri.WorldImagery") |>
+  addCircleMarkers(
+    radius = 5, weight = 1, fillOpacity = 0.8,
+    color = "white", fillColor = ~pal(status),
+    label = ~label_text, popup = ~popup_text
+  ) |>
+  addLegend("bottomright", pal = pal, values = ~status, title = "Status")
+```
+
+## Using the snapshot in other chapters
+
+Later chapters should read the filtered snapshot (`FILTERED_PATH`, written above) with `st_read()`, so that manually excluded points are left out. The snapshot is stored in WGS 84 (EPSG:4326), matching the other fish observation layers in the book. Chapters that combine it with NetMap layers should first transform it to the NetMap CRS with `st_transform(kwf_surveys, st_crs(netmap))`, since the NetMap files may use a different projection. The filtered file is not yet wired into `netmap_prep.qmd` or the new fish observations chapter.

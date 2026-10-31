@@ -12,7 +12,6 @@ book:
     - index.qmd
     - chapters/intro.qmd
     - chapters/acknowledgements.qmd
-    - chapters/arcgis_data_intake.qmd
     - part: "Methods - Geographic Data"
       chapters:
         - chapters/geographic_data/focus_areas.qmd
@@ -20,6 +19,7 @@ book:
         - chapters/geographic_data/netmap_prep.qmd
     - part: "Methods - Fish Habitat Data"
       chapters:
+        - chapters/arcgis_data_intake.qmd
         - chapters/fish_habitat_data/new_fish_obs.qmd
         - chapters/fish_habitat_data/existing_fish_obs.qmd
     - chapters/results.qmd

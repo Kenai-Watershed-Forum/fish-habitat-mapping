@@ -32,11 +32,12 @@
   {
     "objectID": "chapters/arcgis_data_intake.html",
     "href": "chapters/arcgis_data_intake.html",
-    "title": "4  ArcGIS Online Data Intake",
+    "title": "7  ArcGIS Online Data Intake",
     "section": "",
     "text": "Content TK. This chapter will document a direct data intake from ArcGIS Online feature services (rather than downloaded Field Maps CSV exports), feeding multiple downstream chapters including New Fish Observations and, eventually, NetMap Preparation.",
     "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>ArcGIS Online Data Intake</span>"
+      "Methods - Fish Habitat Data",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>ArcGIS Online Data Intake</span>"
     ]
   },
   {
