@@ -1,0 +1,8 @@
+* text=auto
+*.Rproj text eol=lf
+*.gpkg binary
+*.xlsx binary
+*.xls binary
+*.docx binary
+*.pdf binary
+*.png binary
